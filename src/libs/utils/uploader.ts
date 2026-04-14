@@ -1,12 +1,14 @@
-import path from "path";
-import multer from "multer";
-import { v4 } from "uuid";
+import path from 'path';
+import multer from 'multer';
+import { v4 } from 'uuid';
+import fs from 'fs';
 
-
-function getTargetImageStore(address: any) {
+function getTargetImageStore(address: string) {
     return multer.diskStorage({
         destination: function (req, file, cb) {
-            cb(null, `./uploads/${address}`);
+            const dir = `./uploads/${address}`;
+            fs.mkdirSync(dir, { recursive: true }); // ← this is what was missing
+            cb(null, dir);
         },
         filename: function (req, file, cb) {
             const extension = path.parse(file.originalname).ext;
@@ -14,12 +16,12 @@ function getTargetImageStore(address: any) {
             cb(null, random_name);
         },
     });
-};
+}
 
 const makeUploader = (address: string) => {
     const storage = getTargetImageStore(address);
     return multer({ storage: storage });
-}
+};
 
 export default makeUploader;
 

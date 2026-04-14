@@ -1,3 +1,5 @@
 export enum ViewGroup {
-    PRODUCT = "PRODUCT"
+    CAR = 'CAR',
+    POST = 'POST',
+    QNA = 'QNA',
 }

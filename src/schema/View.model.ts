@@ -1,25 +1,26 @@
-import mongoose, {Schema} from 'mongoose';
+import mongoose, { Schema } from 'mongoose';
 import { ViewGroup } from '../libs/enums/view.enum';
 
-const viewSchema = new Schema ({
+const viewSchema = new Schema({
     viewGroup: {
         type: String,
         enum: ViewGroup,
-        required: true
+        required: true,
     },
 
     memberId: {
         type: Schema.Types.ObjectId,
         required: true,
-        ref: "Member"
+        ref: 'Member',
     },
 
     viewRefId: {
         type: Schema.Types.ObjectId,
-        required: true
-    }
-},
-    {timestamps: true} 
-)
+        required: true,
+    },
+}, { timestamps: true });
 
-export default mongoose.model("View", viewSchema);
+// prevents same member viewing same item twice
+viewSchema.index({ memberId: 1, viewRefId: 1 }, { unique: true });
+
+export default mongoose.model('View', viewSchema);

@@ -1,57 +1,97 @@
 import express from 'express';
 const routerAdmin = express.Router();
-import restaurantController from "./controllers/restaurant.controller";
-import productController from './controllers/product.controller';
-import makeUploader from "./libs/utils/uploader"
+import adminController from "./controllers/admin.controller";
+import carController from './controllers/car.controller';
+import makeUploader from "./libs/utils/uploader";
 
-/**Restaurant*/
-
-routerAdmin.get('/', restaurantController.goHome);
-
-routerAdmin
-  .get('/login', restaurantController.goLogin)
-  .post('/login', restaurantController.processLogin);
+/** Auth */
+routerAdmin.get('/', adminController.goHome);
 
 routerAdmin
-  .get('/signup', restaurantController.goSignup)
-  .post(
-    "/signup",
-    makeUploader("members").single("memberImage"),
-    restaurantController.processSignup
-  );
+    .get('/login', adminController.goLogin)
+    .post('/login', adminController.processLogin);
 
-routerAdmin.get('/logout', restaurantController.logout)
+routerAdmin
+    .get('/signup', adminController.goSignup)
+    .post(
+        '/signup',
+        makeUploader('members').single('memberImage'),
+        adminController.processSignup
+    );
 
-routerAdmin.get("/check-me", restaurantController.checkAuthSession);
+routerAdmin.get('/logout', adminController.logout);
+routerAdmin.get('/check-me', adminController.checkAuthSession);
 
-
-/**Product*/
-
+/** Cars */
 routerAdmin.get(
-  "/product/all",
-  restaurantController.verifyRestaurant,
-  productController.getAllProducts);
+    '/car/all',
+    adminController.verifyAdmin,
+    carController.getAllCars
+);
 
 routerAdmin.post(
-  "/product/create",
-  restaurantController.verifyRestaurant,
-  makeUploader("products").array("productImages", 5),
-  productController.createNewProduct);
+    '/car/create',
+    adminController.verifyAdmin,
+    makeUploader('cars').array('carImages', 10),
+    carController.createNewCar
+);
 
 routerAdmin.post(
-  "/product/:id",
-  restaurantController.verifyRestaurant,
-  productController.updateChosenProduct);
+    '/car/:id',
+    adminController.verifyAdmin,
+    carController.updateChosenCar
+);
 
-/*User*/
+routerAdmin.post(
+    '/car/:id/delete',
+    adminController.verifyAdmin,
+    carController.deleteChosenCar
+);
+
+/** Members */
 routerAdmin.get(
-  "/user/all", 
-  restaurantController.verifyRestaurant, 
-  restaurantController.getUsers);
+    '/member/all',
+    adminController.verifyAdmin,
+    adminController.getMembers
+);
 
 routerAdmin.post(
-  "/user/edit", 
-  restaurantController.verifyRestaurant, 
-  restaurantController.updateChosenUser);
+    '/member/edit',
+    adminController.verifyAdmin,
+    adminController.updateChosenMember
+);
+
+/** Consultations */
+routerAdmin.get(
+    '/consultation/all',
+    adminController.verifyAdmin,
+    adminController.getConsultations
+);
+
+routerAdmin.post(
+    '/consultation/:id',
+    adminController.verifyAdmin,
+    adminController.updateChosenConsultation
+);
+
+/** Posts */
+routerAdmin.get(
+    '/post/all',
+    adminController.verifyAdmin,
+    adminController.getPosts
+);
+
+routerAdmin.post(
+    '/post/create',
+    adminController.verifyAdmin,
+    makeUploader('posts').single('postImage'),
+    adminController.createPost
+);
+
+routerAdmin.post(
+    '/post/:id/delete',
+    adminController.verifyAdmin,
+    adminController.deleteChosenPost
+);
 
 export default routerAdmin;

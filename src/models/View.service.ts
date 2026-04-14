@@ -17,7 +17,7 @@ class ViewService{
             .exec(); 
     }
 
-    public async inertMemberView(input: ViewInput): Promise <View>{
+    public async insertMemberView(input: ViewInput): Promise <View>{
         try{
             return await this.viewModel.create(input);
         }catch(err){

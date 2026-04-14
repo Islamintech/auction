@@ -9,18 +9,20 @@ export enum HttpCode {
     INTERNAL_SERVER_ERROR = 500,
 }
 
-
 export enum Message {
     SOMETHING_WENT_WRONG = "Something went wrong!",
     NO_DATA_FOUND = "No data is found!",
     CREATED_FAILED = "Create is failed!",
     UPDATED_FAILED = "Update is failed!",
     TOKEN_CREATION_FAILED = "Token creation error",
-    NO_MEMBER_NICK = "No Member with that nickname!",
-    USED_NICK_PHONE = "You have inserted already in use nick or phone!",
+    NO_MEMBER_NICK = "No member with that nickname!",
+    USED_NICK_PHONE = "This nickname or phone is already in use!",
     WORNG_PASSWORD = "Wrong password!",
     NOT_AUTHENTICATED = "You are not authenticated, please login first",
-    BLOCKED_USER = "You have been blocked, please contact restaurant"
+    BLOCKED_USER = "Your account has been banned, please contact Auction.uz support",
+    UNAUTHORIZED_ACTION = "You are not authorized to perform this action",
+    FILE_NOT_FOUND = "No file was uploaded",
+    ADMIN_EXIST = "Admin account already exists!",
 }
 
 class Errors extends Error {
@@ -29,8 +31,8 @@ class Errors extends Error {
 
     static standart = {
         code: HttpCode.INTERNAL_SERVER_ERROR,
-        message: Message.SOMETHING_WENT_WRONG
-    }
+        message: Message.SOMETHING_WENT_WRONG,
+    };
 
     constructor(statusCode: HttpCode, statusMessage: Message) {
         super();

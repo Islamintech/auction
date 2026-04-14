@@ -10,9 +10,12 @@ export interface Member {
     memberNick: string;
     memberPhone: string;
     memberPassword?: string;
+    memberEmail?: string;
     memberImage?: string;
-    memberDes?: string;
+    memberDesc?: string;
     memberAddress?: string;
+    memberCountry?: string;
+    memberTelegram?: string;
     memberPoints: number;
     createdAt: Date;
     updatedAt: Date;
@@ -24,9 +27,12 @@ export interface MemberInput {
     memberNick: string;
     memberPhone: string;
     memberPassword: string;
+    memberEmail?: string;
     memberImage?: string;
-    memberDes?: string;
+    memberDesc?: string;
     memberAddress?: string;
+    memberCountry?: string;
+    memberTelegram?: string;
     memberPoints?: number;
 }
 
@@ -41,8 +47,12 @@ export interface MemberUpdateInput {
     memberNick?: string;
     memberPhone?: string;
     memberPassword?: string;
+    memberEmail?: string;
     memberImage?: string;
     memberAddress?: string;
+    memberCountry?: string;
+    memberTelegram?: string;
+    memberDesc?: string;
 }
 
 export interface ExtendedRequest extends Request {
@@ -50,8 +60,6 @@ export interface ExtendedRequest extends Request {
     file: Express.Multer.File;
     files: Express.Multer.File[];
 }
-
-
 
 export interface AdminRequest extends Request {
     member: Member;

@@ -1,97 +1,30 @@
-console.log("Home frontend javascript file");
+document.addEventListener('DOMContentLoaded', () => {
+    const tabLive = document.getElementById('tab-live');
+    const tabWeek = document.getElementById('tab-week');
+    const bars    = document.querySelectorAll('.bar');
 
-function fitElementToParent(el, padding) {
-  let timeout = null;
+    const liveData = [45, 60, 35, 75, 50, 40, 90, 55, 65, 80, 45, 70];
+    const weekData = [70, 40, 85, 55, 65, 90, 45, 75, 60, 50, 80, 35];
 
-  function resize() {
-    if (timeout) clearTimeout(timeout);
-    anime.set(el, { scale: 1 });
-    let pad = padding || 0,
-     elOffsetWidth = el.offsetWidth - pad,
-     parentOffsetWidth = parentEl.offsetWidth,
-     ratio = parentOffsetWidth / elOffsetWidth;
-    timeout = setTimeout(anime.set(el, { scale: ratio }), 10);
-  }
+    function updateBars(data) {
+        bars.forEach((bar, i) => {
+            bar.style.height = data[i] + '%';
+        });
+    }
 
-  resize();
-  window.addEventListener("resize", resize);
-}
+    if (tabLive) {
+        tabLive.addEventListener('click', () => {
+            tabLive.classList.add('active');
+            tabWeek.classList.remove('active');
+            updateBars(liveData);
+        });
+    }
 
-(function () {
-  const sphereEl = document.querySelector(".sphere-animation"),
-   spherePathEls = sphereEl.querySelectorAll(".sphere path"),
-   pathLength = spherePathEls.length,
-   animations = [];
-
-  fitElementToParent(sphereEl);
-
-  const breathAnimation = anime({
-    begin: function () {
-      for (let i = 0; i < pathLength; i++) {
-        animations.push(
-          anime({
-            targets: spherePathEls[i],
-            stroke: {
-              value: ["rgba(255,75,75,1)", "rgba(80,80,80,.35)"],
-              duration: 500,
-            },
-            translateX: [2, -4],
-            translateY: [2, -4],
-            easing: "easeOutQuad",
-            autoplay: false,
-          })
-        );
-      }
-    },
-    update: function (ins) {
-      animations.forEach(function (animation, i) {
-        let percent = (1 - Math.sin(i * 0.35 + 0.0022 * ins.currentTime)) / 2;
-        animation.seek(animation.duration * percent);
-      });
-    },
-    duration: Infinity,
-    autoplay: false,
-  });
-
-  const introAnimation = anime
-    .timeline({
-      autoplay: false,
-    })
-    .add(
-      {
-        targets: spherePathEls,
-        strokeDashoffset: {
-          value: [anime.setDashoffset, 0],
-          duration: 3900,
-          easing: "easeInOutCirc",
-          delay: anime.stagger(190, { direction: "reverse" }),
-        },
-        duration: 2000,
-        delay: anime.stagger(60, { direction: "reverse" }),
-        easing: "linear",
-      },
-      0
-    );
-
-  const shadowAnimation = anime(
-    {
-      targets: "#sphereGradient",
-      x1: "25%",
-      x2: "25%",
-      y1: "0%",
-      y2: "75%",
-      duration: 30000,
-      easing: "easeOutQuint",
-      autoplay: false,
-    },
-    0
-  );
-
-  function init() {
-    introAnimation.play();
-    breathAnimation.play();
-    shadowAnimation.play();
-  }
-
-  init();
-})();
+    if (tabWeek) {
+        tabWeek.addEventListener('click', () => {
+            tabWeek.classList.add('active');
+            tabLive.classList.remove('active');
+            updateBars(weekData);
+        });
+    }
+});
