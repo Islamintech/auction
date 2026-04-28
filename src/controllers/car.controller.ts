@@ -4,7 +4,7 @@ import { T } from '../libs/types/common';
 import CarService from '../models/car.service';
 import { AdminRequest, ExtendedRequest } from '../libs/types/member';
 import { CarInput, CarInquiry, CarUpdateInput } from '../libs/types/car';
-import { CarBrand, CarColor, CarStatus } from '../libs/enums/car.enum';
+import { CarBrand, CarColor, CarCondition, CarStatus, CarType } from '../libs/enums/car.enum';
 
 const carService = new CarService();
 const carController: T = {};
@@ -86,6 +86,8 @@ carController.getAllCars = async (req: Request, res: Response) => {
             CarBrand: Object.values(CarBrand),
             CarColor: Object.values(CarColor),
             CarStatus: Object.values(CarStatus),
+            CarType: Object.values(CarType),
+            CarCondition: Object.values(CarCondition),
         });
     } catch (err) {
         console.log('Error, getAllCars:', err);
@@ -104,6 +106,20 @@ carController.createNewCar = async (req: AdminRequest, res: Response) => {
         data.carImages = req.files?.map((ele) => {
             return ele.path.replace(/\\/g, '/');
         });
+
+        const partNames: string[] = []
+            .concat(req.body.damagedPartName || [])
+            .filter((s: string) => s && s.trim().length > 0);
+        const partCosts: string[] = [].concat(req.body.damagedPartCost || []);
+
+        if (data.carCondition === CarCondition.DAMAGED && partNames.length > 0) {
+            data.damagedParts = partNames.map((name: string, i: number) => ({
+                name: String(name).trim(),
+                repairCost: Number(partCosts[i]) || 0,
+            }));
+        } else {
+            data.damagedParts = [];
+        }
 
         await carService.createNewCar(data);
 

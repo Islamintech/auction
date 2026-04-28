@@ -88,6 +88,27 @@
               </div>
 
               <div>
+                <label class="block text-[10px] uppercase tracking-widest font-mono font-bold text-primary mb-2">Body Type *</label>
+                <select name="carType" required
+                  class="custom-select w-full bg-black/40 border border-outline rounded-lg focus:border-primary text-on-surface px-4 py-3 text-sm outline-none">
+                  <option value="">Select Type</option>
+                  <% CarType.map(function(t) { %>
+                    <option value="<%= t %>"><%= t.charAt(0) + t.slice(1).toLowerCase() %></option>
+                  <% }) %>
+                </select>
+              </div>
+
+              <div>
+                <label class="block text-[10px] uppercase tracking-widest font-mono font-bold text-primary mb-2">Condition *</label>
+                <select name="carCondition" id="carCondition" required onchange="toggleDamagedSection()"
+                  class="custom-select w-full bg-black/40 border border-outline rounded-lg focus:border-primary text-on-surface px-4 py-3 text-sm outline-none">
+                  <% CarCondition.map(function(c) { %>
+                    <option value="<%= c %>"><%= c.charAt(0) + c.slice(1).toLowerCase() %></option>
+                  <% }) %>
+                </select>
+              </div>
+
+              <div>
                 <label class="block text-[10px] uppercase tracking-widest font-mono font-bold text-primary mb-2">Model Year *</label>
                 <input name="carYear" type="number" required min="1990" max="2025"
                   class="w-full bg-black/40 border border-outline rounded-lg focus:border-primary text-on-surface px-4 py-3 text-sm font-mono outline-none"
@@ -117,6 +138,18 @@
                     <option value="<%= color %>"><%= color.charAt(0) + color.slice(1).toLowerCase() %></option>
                   <% }) %>
                 </select>
+              </div>
+
+              <div class="col-span-2" id="damaged-section" style="display:none">
+                <div class="flex justify-between items-center mb-2">
+                  <label class="block text-[10px] uppercase tracking-widest font-mono font-bold text-danger">Damaged Parts & Repair Cost</label>
+                  <button type="button" onclick="addDamagedPart()"
+                    class="text-[10px] uppercase font-mono font-bold text-primary border border-primary/40 rounded px-3 py-1 hover:bg-primary/10">
+                    + Add Part
+                  </button>
+                </div>
+                <div id="damaged-parts-list" class="space-y-2"></div>
+                <p class="text-[9px] text-on-surface-faint font-mono italic mt-2">Repair costs are charged on top of vehicle price during shipping.</p>
               </div>
 
               <div class="col-span-2">
@@ -224,6 +257,20 @@
                   <span class="font-mono <%= car.carMileage === 0 ? 'text-success' : '' %>">
                     <%= car.carMileage === 0 ? 'New (0 km)' : car.carMileage?.toLocaleString() + ' km' %>
                   </span>
+                </div>
+                <div class="text-[10px] font-mono uppercase text-on-surface-faint mt-1">
+                  <%= car.carType || '—' %>
+                  <% if (car.carCondition === 'DAMAGED') { %>
+                    • <span class="text-danger font-bold">DAMAGED</span>
+                    <% if (car.damagedParts && car.damagedParts.length) { %>
+                      <span class="text-on-surface-faint">
+                        (<%= car.damagedParts.length %> part<%= car.damagedParts.length > 1 ? 's' : '' %>,
+                        $<%= car.damagedParts.reduce((s,p) => s + (p.repairCost||0), 0).toLocaleString() %>)
+                      </span>
+                    <% } %>
+                  <% } else { %>
+                    • <span class="text-success font-bold">INTACT</span>
+                  <% } %>
                 </div>
               </td>
               <td class="px-4 py-5">

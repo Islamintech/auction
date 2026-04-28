@@ -21,6 +21,23 @@ export enum CarBrand {
     OTHER = 'OTHER',
 }
 
+export enum CarType {
+    SEDAN = 'SEDAN',
+    SUV = 'SUV',
+    VAN = 'VAN',
+    HATCHBACK = 'HATCHBACK',
+    COUPE = 'COUPE',
+    CONVERTIBLE = 'CONVERTIBLE',
+    TRUCK = 'TRUCK',
+    WAGON = 'WAGON',
+    OTHER = 'OTHER',
+}
+
+export enum CarCondition {
+    INTACT = 'INTACT',
+    DAMAGED = 'DAMAGED',
+}
+
 export enum CarColor {
     WHITE = 'WHITE',
     BLACK = 'BLACK',
