@@ -1,7 +1,7 @@
 * { margin: 0; padding: 0; box-sizing: border-box; }
 
 body {
-  background: #0a0900;
+  background: #121414;
   color: #e2d9c5;
   font-family: 'Inter', sans-serif;
   min-height: 100vh;
@@ -36,11 +36,12 @@ body {
 .brand-icon { color: #fbbf24; font-size: 18px; }
 
 .brand-name {
-  font-family: 'Space Mono', monospace;
-  font-size: 13px;
+  font-family: 'Fraunces', serif;
+  font-size: 18px;
   font-weight: 700;
+  font-style: italic;
   color: #fbbf24;
-  letter-spacing: 3px;
+  letter-spacing: 0.5px;
 }
 
 .nav-links {
@@ -187,7 +188,7 @@ body {
   left: 0;
   width: 100%;
   height: 26px;
-  background: linear-gradient(135deg, #1a1400, #2a2000);
+  background: linear-gradient(135deg, #1e2020, #37393a);
   border: 1px solid rgba(251, 191, 36, 0.3);
   border-radius: 6px 6px 4px 4px;
 }
@@ -198,7 +199,7 @@ body {
   left: 20%;
   width: 60%;
   height: 32px;
-  background: linear-gradient(135deg, #1a1400, #2a2000);
+  background: linear-gradient(135deg, #1e2020, #37393a);
   border: 1px solid rgba(251, 191, 36, 0.25);
   border-radius: 8px 8px 0 0;
 }
@@ -318,10 +319,10 @@ body {
 
 /* ── Vault Title ── */
 .vault-title {
-  font-family: 'Space Mono', monospace;
-  font-size: 42px;
-  font-weight: 700;
-  letter-spacing: -1px;
+  font-family: 'Fraunces', serif;
+  font-size: 52px;
+  font-weight: 600;
+  letter-spacing: -1.5px;
   text-align: center;
 }
 
@@ -397,7 +398,7 @@ body {
 }
 
 .stat-card-value {
-  font-family: 'Space Mono', monospace;
+  font-family: 'JetBrains Mono', monospace;
   font-size: 32px;
   font-weight: 700;
   color: #fbbf24;
@@ -463,7 +464,7 @@ body {
 
 .chart-tab.active {
   background: #fbbf24;
-  color: #0a0900;
+  color: #121414;
   border-color: #fbbf24;
 }
 
@@ -555,7 +556,7 @@ body {
   border: none;
 }
 
-.btn--primary { background: #fbbf24; color: #0a0900; }
+.btn--primary { background: #fbbf24; color: #121414; }
 .btn--primary:hover { background: #f59e0b; }
 .btn--ghost {
   border: 1px solid rgba(255,255,255,0.15);

@@ -7,7 +7,7 @@
     <link rel="icon" type="image/png" href="/img/favicon.png" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Space+Mono:wght@400;700&family=Space+Grotesk:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600;9..144,700;9..144,800&family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet" />
     <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
     <script>
       tailwind.config = {
@@ -15,29 +15,33 @@
         theme: {
           extend: {
             colors: {
-              "primary":              "#fbbf24",
-              "background":           "#0a0900",
-              "surface":              "rgba(255,255,255,0.02)",
-              "on-surface":           "#ffffff",
-              "on-surface-secondary": "rgba(255,255,255,0.5)",
-              "on-surface-faint":     "rgba(255,255,255,0.2)",
-              "outline":              "rgba(255,255,255,0.07)",
-              "outline-gold":         "rgba(251,191,36,0.2)",
-              "success":              "#34d399",
-              "danger":               "#f87171",
+              "primary":                "#fbbf24",
+              "background":             "#121414",
+              "surface":                "#1a1c1c",
+              "surface-container-low":  "#1a1c1c",
+              "surface-container":      "#1e2020",
+              "surface-bright":         "#37393a",
+              "on-surface":             "#e7e9e9",
+              "on-surface-secondary":   "rgba(231,233,233,0.65)",
+              "on-surface-faint":       "rgba(231,233,233,0.35)",
+              "outline":                "rgba(255,255,255,0.08)",
+              "outline-gold":           "rgba(251,191,36,0.2)",
+              "success":                "#34d399",
+              "danger":                 "#f87171",
             },
             borderRadius: { DEFAULT: "8px", card: "12px" },
             fontFamily: {
-              headline: ["Space Grotesk", "sans-serif"],
+              headline: ["Fraunces", "serif"],
               body:     ["Inter", "sans-serif"],
-              mono:     ["Space Mono", "monospace"],
+              mono:     ["JetBrains Mono", "monospace"],
             }
           }
         }
       }
     </script>
     <style>
-      body { font-family: 'Inter', sans-serif; background-color: #0a0900; color: #fff; }
+      body { font-family: 'Inter', sans-serif; background-color: #121414; color: #e7e9e9; }
+      h1, h2, h3, h4, h5, h6, .headline { font-family: 'Fraunces', serif; letter-spacing: -0.02em; }
       .scrollbar-hide::-webkit-scrollbar { display: none; }
       .scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
     </style>

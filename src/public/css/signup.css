@@ -1,7 +1,7 @@
 * { margin: 0; padding: 0; box-sizing: border-box; }
 
 body {
-  background: #0a0900;
+  background: #121414;
   color: #e2d9c5;
   font-family: 'Inter', sans-serif;
   min-height: 100vh;
@@ -46,11 +46,12 @@ body {
 .brand-icon { font-size: 32px; color: #fbbf24; }
 
 .brand-name {
-  font-family: 'Space Mono', monospace;
-  font-size: 22px;
+  font-family: 'Fraunces', serif;
+  font-size: 28px;
   font-weight: 700;
+  font-style: italic;
   color: #fbbf24;
-  letter-spacing: 4px;
+  letter-spacing: 0.5px;
 }
 
 .login-tagline {
@@ -208,7 +209,7 @@ body {
   width: 100%;
   padding: 13px;
   background: #fbbf24;
-  color: #0a0900;
+  color: #121414;
   border: none;
   border-radius: 8px;
   font-size: 14px;
