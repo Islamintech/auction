@@ -13,10 +13,13 @@ const consultationController: T = {};
 consultationController.createConsultation = async (req: Request, res: Response) => {
     try {
         console.log('createConsultation');
+        
         const input: ConsultationInput = req.body;
+        
 
         // attach memberId if logged in
         const extReq = req as ExtendedRequest;
+        console.log('cookie member:', extReq.member?._id);
         if (extReq.member?._id) input.memberId = extReq.member._id;
 
         const result = await consultationService.createConsultation(input);

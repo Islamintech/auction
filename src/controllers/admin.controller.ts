@@ -8,10 +8,13 @@ import Errors, { HttpCode, Message } from '../libs/Errors';
 import MemberModel from '../schema/Member.model';
 import CarModel from '../schema/Car.model';
 import ConsultationModel from '../schema/Consultation.model';
+import { ConsultationStatus } from '../libs/enums/consultation.enum';
 import PostModel from '../schema/Post.model';
+import ConsultationService from '../models/consultation.service';
 
 const memberService = new MemberService();
 const postService = new PostService();
+const consultationService = new ConsultationService();
 const adminController: T = {};
 
 adminController.goHome = async (req: Request, res: Response) => {
@@ -152,29 +155,49 @@ adminController.updateChosenMember = async (req: Request, res: Response) => {
 
 /** Consultations */
 adminController.getConsultations = async (req: Request, res: Response) => {
-    try {
-        console.log('getConsultations');
-        const result = await memberService.getConsultations(req.query);
-        res.render('consultations', { consultations: result });
-    } catch (err) {
-        console.log('Error, getConsultations:', err);
-        if (err instanceof Errors) res.status(err.code).json(err);
-        else res.status(Errors.standart.code).json(Errors.standart.message);
-    }
-};
+      try {
+          console.log('getConsultations');
+          const inquiry = {
+              page: Number(req.query.page) || 1,
+              limit: Number(req.query.limit) || 25,
+              status: req.query.status as ConsultationStatus | undefined,
+          };
+          const result = await consultationService.getConsultations(inquiry);
+          res.render('consultations', { consultations: result });
+      } catch (err) {
+          console.log('Error, getConsultations:', err);
+          res.render('consultations', { consultations: [] });
+      }
+  };
 
-adminController.updateChosenConsultation = async (req: Request, res: Response) => {
-    try {
-        console.log('updateChosenConsultation');
-        const { id } = req.params;
-        const result = await memberService.updateChosenConsultation(String(id), req.body);
-        res.status(HttpCode.OK).json({ data: result });
-    } catch (err) {
-        console.log('Error, updateChosenConsultation:', err);
-        if (err instanceof Errors) res.status(err.code).json(err);
-        else res.status(Errors.standart.code).json(Errors.standart.message);
-    }
-};
+  adminController.updateChosenConsultation = async (req: Request, res: Response) => {
+      try {
+          console.log('updateChosenConsultation');
+          const { id } = req.params;
+          const result = await consultationService.updateChosenConsultation(
+              String(id),
+              req.body
+          );
+          res.status(HttpCode.OK).json({ data: result });
+      } catch (err) {
+          console.log('Error, updateChosenConsultation:', err);
+          if (err instanceof Errors) res.status(err.code).json(err);
+          else res.status(Errors.standart.code).json(Errors.standart.message);
+      }
+  };
+
+  adminController.deleteChosenConsultation = async (req: Request, res: Response) => {
+      try {
+          console.log('deleteChosenConsultation');
+          const { id } = req.params;
+          const result = await consultationService.deleteChosenConsultation(String(id));
+          res.status(HttpCode.OK).json({ data: result });
+      } catch (err) {
+          console.log('Error, deleteChosenConsultation:', err);
+          if (err instanceof Errors) res.status(err.code).json(err);
+          else res.status(Errors.standart.code).json(Errors.standart.message);
+      }
+  };
 
 /** Posts */
 adminController.createPost = async (req: AdminRequest, res: Response) => {
@@ -210,6 +233,27 @@ adminController.getPosts = async (req: Request, res: Response) => {
         res.render('posts', { posts: result });
     } catch (err) {
         console.log('Error, getPosts:', err);
+        if (err instanceof Errors) res.status(err.code).json(err);
+        else res.status(Errors.standart.code).json(Errors.standart.message);
+    }
+};
+
+adminController.updateChosenPost = async (req: AdminRequest, res: Response) => {
+    try {
+        console.log('updateChosenPost');
+        const { id } = req.params;
+
+        const input: any = {};
+        if (req.body.postTitle  !== undefined) input.postTitle  = req.body.postTitle;
+        if (req.body.postBody   !== undefined) input.postBody   = req.body.postBody;
+        if (req.body.postType   !== undefined) input.postType   = req.body.postType;
+        if (req.body.postStatus !== undefined) input.postStatus = req.body.postStatus;
+        if (req.file) input.postImage = req.file.path.replace(/\\/g, '/');
+
+        const result = await postService.updateChosenPost(String(id), input);
+        res.status(HttpCode.OK).json({ data: result });
+    } catch (err) {
+        console.log('Error, updateChosenPost:', err);
         if (err instanceof Errors) res.status(err.code).json(err);
         else res.status(Errors.standart.code).json(Errors.standart.message);
     }

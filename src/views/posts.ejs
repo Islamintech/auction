@@ -198,6 +198,10 @@
                 <%= new Date(p.createdAt).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' }) %>
               </td>
               <td class="px-8 py-5 text-right">
+                <button onclick='openEditPost(<%- JSON.stringify({ _id: p._id, postTitle: p.postTitle, postBody: p.postBody, postType: p.postType, postStatus: p.postStatus }) %>)'
+                  class="p-2 rounded hover:bg-white/10 text-on-surface-secondary hover:text-primary transition-colors" title="Edit">
+                  ✏️
+                </button>
                 <button onclick="deletePost('<%= p._id %>')"
                   class="p-2 rounded hover:bg-white/10 text-on-surface-secondary hover:text-danger transition-colors" title="Delete">
                   🗑
@@ -225,6 +229,72 @@
 
   </div>
 </main>
+
+<!-- Edit Post Modal -->
+<div id="edit-post-modal" class="fixed inset-0 bg-black/70 backdrop-blur-sm z-50 hidden items-center justify-center p-4">
+  <div class="bg-surface rounded-card border border-outline shadow-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto">
+    <div class="px-8 py-5 border-b border-outline flex justify-between items-center">
+      <h3 class="font-headline text-sm font-bold text-on-surface uppercase tracking-widest">Edit Post</h3>
+      <button onclick="closeEditPost()" class="text-on-surface-faint hover:text-danger text-xl">✕</button>
+    </div>
+    <form id="edit-post-form" enctype="multipart/form-data" class="p-8 flex flex-col gap-6">
+      <input type="hidden" name="_id" id="edit-post-id" />
+
+      <div>
+        <label class="block text-xs uppercase tracking-widest font-mono font-bold text-primary mb-2">Title</label>
+        <input name="postTitle" id="edit-post-title" type="text"
+          class="w-full bg-black/40 border border-outline rounded-lg focus:border-primary text-on-surface px-4 py-3 text-sm outline-none" />
+      </div>
+
+      <div class="grid grid-cols-2 gap-6">
+        <div>
+          <label class="block text-xs uppercase tracking-widest font-mono font-bold text-primary mb-2">Type</label>
+          <select name="postType" id="edit-post-type"
+            class="w-full bg-black/40 border border-outline rounded-lg focus:border-primary text-on-surface px-4 py-3 text-sm outline-none"
+            style="appearance:none">
+            <option value="NEWS">News</option>
+            <option value="ARTICLE">Article</option>
+            <option value="FREE_BOARD">Free Board</option>
+          </select>
+        </div>
+        <div>
+          <label class="block text-xs uppercase tracking-widest font-mono font-bold text-primary mb-2">Status</label>
+          <select name="postStatus" id="edit-post-status"
+            class="w-full bg-black/40 border border-outline rounded-lg focus:border-primary text-on-surface px-4 py-3 text-sm outline-none"
+            style="appearance:none">
+            <option value="ACTIVE">Active</option>
+            <option value="DELETE">Deleted</option>
+          </select>
+        </div>
+      </div>
+
+      <div>
+        <label class="block text-xs uppercase tracking-widest font-mono font-bold text-primary mb-2">Body</label>
+        <textarea name="postBody" id="edit-post-body" rows="6"
+          class="w-full bg-black/40 border border-outline rounded-lg focus:border-primary text-on-surface px-4 py-3 text-sm outline-none resize-none"></textarea>
+      </div>
+
+      <div>
+        <label class="block text-xs uppercase tracking-widest font-mono font-bold text-primary mb-2">
+          Replace Cover Image <span class="text-on-surface-faint font-normal normal-case tracking-normal">— optional</span>
+        </label>
+        <input type="file" name="postImage" accept="image/*"
+          class="w-full bg-black/40 border border-dashed border-outline rounded-lg p-3 text-xs text-on-surface-secondary" />
+      </div>
+
+      <div class="flex gap-3 justify-end pt-2">
+        <button type="button" onclick="closeEditPost()"
+          class="px-6 py-3 rounded-lg border border-outline text-on-surface-secondary font-mono text-xs uppercase font-bold hover:border-danger hover:text-danger transition-all">
+          Cancel
+        </button>
+        <button type="submit"
+          class="px-10 py-3 rounded-lg bg-primary text-background font-mono text-xs uppercase font-bold hover:bg-primary/80 transition-all">
+          Save Changes
+        </button>
+      </div>
+    </form>
+  </div>
+</div>
 
 
 <script>
@@ -261,6 +331,39 @@ function previewPostImage(input) {
         reader.readAsDataURL(input.files[0]);
     }
 }
+
+function openEditPost(post) {
+    document.getElementById('edit-post-id').value     = post._id;
+    document.getElementById('edit-post-title').value  = post.postTitle  || '';
+    document.getElementById('edit-post-body').value   = post.postBody   || '';
+    document.getElementById('edit-post-type').value   = post.postType   || 'NEWS';
+    document.getElementById('edit-post-status').value = post.postStatus || 'ACTIVE';
+    const modal = document.getElementById('edit-post-modal');
+    modal.classList.remove('hidden');
+    modal.classList.add('flex');
+}
+
+function closeEditPost() {
+    const modal = document.getElementById('edit-post-modal');
+    modal.classList.add('hidden');
+    modal.classList.remove('flex');
+    document.getElementById('edit-post-form').reset();
+}
+
+document.getElementById('edit-post-form').addEventListener('submit', function (e) {
+    e.preventDefault();
+    const form = e.target;
+    const id   = document.getElementById('edit-post-id').value;
+    const fd   = new FormData(form);
+
+    // strip empty file field so it doesn't overwrite existing image
+    const file = fd.get('postImage');
+    if (file && file.size === 0) fd.delete('postImage');
+
+    fetch(`/admin/post/${id}`, { method: 'POST', body: fd })
+        .then(r => r.ok ? window.location.reload() : Promise.reject(r))
+        .catch(() => alert('Failed to update post'));
+});
 
 function deletePost(id) {
     if (!confirm('Delete this post?')) return;

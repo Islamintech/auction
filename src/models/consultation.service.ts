@@ -71,10 +71,28 @@ class ConsultationService {
                 { $sort: { createdAt: -1 } },
                 { $skip: (inquiry.page * 1 - 1) * inquiry.limit },
                 { $limit: inquiry.limit * 1 },
+                {
+                    $lookup: {
+                        from: 'cars',
+                        localField: 'carId',
+                        foreignField: '_id',
+                        as: 'carId',
+                    },
+                },
+                { $unwind: { path: '$carId', preserveNullAndEmptyArrays: true } },
             ])
             .exec();
 
         if (!result) throw new Errors(HttpCode.NOT_FOUND, Message.NO_DATA_FOUND);
+        return result;
+    }
+
+    public async deleteChosenConsultation(id: string): Promise<Consultation> {
+        const consultationId = shapeIntoMongooseObjectId(id);
+        const result = await this.consultationModel
+            .findByIdAndDelete(consultationId)
+            .exec();
+        if (!result) throw new Errors(HttpCode.NOT_MODIFIED, Message.UPDATED_FAILED);
         return result;
     }
 

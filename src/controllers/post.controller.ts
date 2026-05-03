@@ -40,8 +40,14 @@ postController.getPost = async (req: ExtendedRequest, res: Response) => {
         console.log('getPost');
         const { id } = req.params;
         const memberId = req.member?._id ?? null;
-        const result = await postService.getPost(memberId, String(id));
-        res.status(HttpCode.OK).json(result);
+        const result: any = await postService.getPost(memberId, String(id));
+        const base = typeof result.toObject === 'function' ? result.toObject() : result;
+        const payload = {
+            ...base,
+            myFavorite: result.myFavorite ?? false,
+            comments:   result.comments   ?? [],
+        };
+        res.status(HttpCode.OK).json(payload);
     } catch (err) {
         console.log('Error, getPost:', err);
         if (err instanceof Errors) res.status(err.code).json(err);

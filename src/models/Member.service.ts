@@ -57,8 +57,17 @@ class MemberService {
 
     public async updateMember(member: Member, input: MemberUpdateInput): Promise<Member> {
         const memberId = shapeIntoMongooseObjectId(member._id);
+
+        const cleaned: any = {};
+        for (const key of Object.keys(input) as (keyof MemberUpdateInput)[]) {
+            const v = (input as any)[key];
+            if (v !== undefined && v !== null && v !== "") {
+                cleaned[key] = v;
+            }
+        }
+
         const result = await this.memberModel
-            .findByIdAndUpdate({ _id: memberId }, input, { new: true })
+            .findByIdAndUpdate({ _id: memberId }, cleaned, { new: true })
             .exec();
         if (!result) throw new Errors(HttpCode.NOT_MODIFIED, Message.UPDATED_FAILED);
         return result;

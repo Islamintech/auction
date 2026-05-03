@@ -91,7 +91,8 @@
               <th class="px-4 py-4 text-[11px] uppercase tracking-[0.08em] font-mono font-bold text-on-surface-faint">Channel</th>
               <th class="px-4 py-4 text-[11px] uppercase tracking-[0.08em] font-mono font-bold text-on-surface-faint">Message</th>
               <th class="px-4 py-4 text-[11px] uppercase tracking-[0.08em] font-mono font-bold text-on-surface-faint">Status</th>
-              <th class="px-8 py-4 text-[11px] uppercase tracking-[0.08em] font-mono font-bold text-on-surface-faint text-right">Date</th>
+              <th class="px-4 py-4 text-[11px] uppercase tracking-[0.08em] font-mono font-bold text-on-surface-faint text-right">Date</th>
+              <th class="px-8 py-4 text-[11px] uppercase tracking-[0.08em] font-mono font-bold text-on-surface-faint text-right">Actions</th>
             </tr>
           </thead>
           <tbody class="divide-y divide-outline" id="consultations-tbody">
@@ -103,7 +104,13 @@
               <td class="px-8 py-5 font-mono text-on-surface-faint text-xs"><%= String(i+1).padStart(2,'0') %></td>
               <td class="px-4 py-5">
                 <div class="flex items-center gap-3">
-                  <div class="w-10 h-10 rounded-lg overflow-hidden flex-shrink-0 bg-white/5 border border-outline flex items-center justify-center text-lg">🚗</div>
+                  <div class="w-10 h-10 rounded-lg overflow-hidden flex-shrink-0 bg-white/5 border border-outline flex items-center justify-center text-lg">
+                    <% if (c.carId?.carImages?.length) { %>
+                      <img src="/<%= c.carId.carImages[0] %>" alt="<%= c.carId.carTitle || 'car' %>" class="w-full h-full object-cover" />
+                    <% } else { %>
+                      🚗
+                    <% } %>
+                  </div>
                   <div class="font-bold text-sm text-on-surface truncate max-w-[160px]">
                     <%= c.carId?.carTitle || '—' %>
                   </div>
@@ -140,14 +147,20 @@
                   <option value="CANCELLED"   <%= c.status === 'CANCELLED'   ? 'selected' : '' %>>Cancelled</option>
                 </select>
               </td>
-              <td class="px-8 py-5 text-right text-sm text-on-surface-secondary">
+              <td class="px-4 py-5 text-right text-sm text-on-surface-secondary">
                 <%= new Date(c.createdAt).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' }) %>
+              </td>
+              <td class="px-8 py-5 text-right">
+                <button onclick="deleteConsultation('<%= c._id %>')"
+                  class="p-2 rounded hover:bg-white/10 text-on-surface-secondary hover:text-danger transition-colors" title="Delete">
+                  🗑
+                </button>
               </td>
             </tr>
             <% }) %>
             <% if(consultations.length === 0) { %>
             <tr>
-              <td colspan="7" class="px-8 py-16 text-center text-on-surface-faint font-mono text-xs uppercase tracking-widest">
+              <td colspan="8" class="px-8 py-16 text-center text-on-surface-faint font-mono text-xs uppercase tracking-widest">
                 No consultation requests yet.
               </td>
             </tr>
@@ -186,6 +199,13 @@ function applyFilters() {
         const matchesStatus = activeStatus === 'all' || status === activeStatus;
         row.style.display = (matchesSearch && matchesStatus) ? '' : 'none';
     });
+}
+
+function deleteConsultation(id) {
+    if (!confirm('Delete this consultation request?')) return;
+    fetch(`/admin/consultation/${id}/delete`, { method: 'POST' })
+        .then(r => r.ok ? window.location.reload() : Promise.reject(r))
+        .catch(() => alert('Failed to delete'));
 }
 
 function updateStatus(select) {

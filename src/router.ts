@@ -69,6 +69,7 @@ router.post(
 /** Consultations */
 router.post(
     '/consultation/create',
+    memberController.retrieveAuth,
     consultationController.createConsultation  // no verifyAuth — guests can inquire
 );
 router.get(

@@ -74,6 +74,12 @@ routerAdmin.post(
     adminController.updateChosenConsultation
 );
 
+routerAdmin.post(
+    '/consultation/:id/delete',
+    adminController.verifyAdmin,
+    adminController.deleteChosenConsultation
+);
+
 /** Posts */
 routerAdmin.get(
     '/post/all',
@@ -86,6 +92,13 @@ routerAdmin.post(
     adminController.verifyAdmin,
     makeUploader('posts').single('postImage'),
     adminController.createPost
+);
+
+routerAdmin.post(
+    '/post/:id',
+    adminController.verifyAdmin,
+    makeUploader('posts').single('postImage'),
+    adminController.updateChosenPost
 );
 
 routerAdmin.post(

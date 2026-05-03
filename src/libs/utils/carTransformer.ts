@@ -2,8 +2,17 @@ import { CarCondition } from '../enums/car.enum';
 
 export const toClientCar = (car: any) => {
     if (!car) return car;
-    const c = typeof car.toObject === 'function' ? car.toObject() : car;
+    
+    // Converts Mongoose Document to plain JS object, then re-merges custom-attached fields
+    // (toObject() strips non-schema properties like myFavorite / comments)
+    const base = typeof car.toObject === 'function' ? car.toObject() : car;
+    const c = {
+        ...base,
+        myFavorite: (car as any).myFavorite ?? base.myFavorite,
+        comments:   (car as any).comments   ?? base.comments,
+    };
     const images: string[] = Array.isArray(c.carImages) ? c.carImages : [];
+    
     return {
         id: String(c._id),
         title: c.carTitle,
@@ -30,6 +39,11 @@ export const toClientCar = (car: any) => {
         likeCount: c.carLikeCount,
         commentCount: c.carCommentCount,
         consultationCount: c.carConsultationCount,
+        
+        // 👇 The missing piece for React's heart state
+        myFavorite: c.myFavorite ?? false,
+        comments: c.comments ?? [],
+
         createdAt: c.createdAt,
         updatedAt: c.updatedAt,
     };
