@@ -5,7 +5,7 @@
   .badge--gold {
     background: rgba(251,191,36,0.1); color: #fbbf24;
     border: 1px solid rgba(251,191,36,0.2);
-    padding: 2px 8px; font-family: 'JetBrains Mono', monospace;
+    padding: 2px 8px; font-family: 'JetBrains Mono', ui-monospace, monospace;
     font-weight: 700; font-size: 0.65rem; letter-spacing: 0.05em; border-radius: 4px;
   }
   .custom-select {
@@ -140,16 +140,64 @@
                 </select>
               </div>
 
+              <div>
+                <label class="block text-[10px] uppercase tracking-widest font-mono font-bold text-primary mb-2">Make</label>
+                <input name="carMake" type="text"
+                  class="w-full bg-black/40 border border-outline rounded-lg focus:border-primary text-on-surface px-4 py-3 text-sm outline-none"
+                  placeholder="e.g., Hyundai" />
+              </div>
+
+              <div>
+                <label class="block text-[10px] uppercase tracking-widest font-mono font-bold text-primary mb-2">Model</label>
+                <input name="carModel" type="text"
+                  class="w-full bg-black/40 border border-outline rounded-lg focus:border-primary text-on-surface px-4 py-3 text-sm outline-none"
+                  placeholder="e.g., Sonata" />
+              </div>
+
+              <div>
+                <label class="block text-[10px] uppercase tracking-widest font-mono font-bold text-primary mb-2">Fuel</label>
+                <select name="carFuel"
+                  class="custom-select w-full bg-black/40 border border-outline rounded-lg focus:border-primary text-on-surface px-4 py-3 text-sm outline-none">
+                  <% CarFuel.map(function(f) { %>
+                    <option value="<%= f %>"><%= f.charAt(0) + f.slice(1).toLowerCase() %></option>
+                  <% }) %>
+                </select>
+              </div>
+
+              <div>
+                <label class="block text-[10px] uppercase tracking-widest font-mono font-bold text-primary mb-2">Transmission</label>
+                <select name="carTransmission"
+                  class="custom-select w-full bg-black/40 border border-outline rounded-lg focus:border-primary text-on-surface px-4 py-3 text-sm outline-none">
+                  <% CarTransmission.map(function(t) { %>
+                    <option value="<%= t %>"><%= t.charAt(0) + t.slice(1).toLowerCase() %></option>
+                  <% }) %>
+                </select>
+              </div>
+
               <div class="col-span-2" id="damaged-section" style="display:none">
+                <div class="grid grid-cols-2 gap-4 mb-4">
+                  <div>
+                    <label class="block text-[10px] uppercase tracking-widest font-mono font-bold text-danger mb-2">Damage Summary</label>
+                    <input name="carDamage" type="text"
+                      class="w-full bg-black/40 border border-outline rounded-lg focus:border-primary text-on-surface px-4 py-3 text-sm outline-none"
+                      placeholder="e.g., Front bumper, hood" />
+                  </div>
+                  <div>
+                    <label class="block text-[10px] uppercase tracking-widest font-mono font-bold text-danger mb-2">Damage Description</label>
+                    <input name="carDamageDesc" type="text"
+                      class="w-full bg-black/40 border border-outline rounded-lg focus:border-primary text-on-surface px-4 py-3 text-sm outline-none"
+                      placeholder="Detailed condition notes" />
+                  </div>
+                </div>
                 <div class="flex justify-between items-center mb-2">
-                  <label class="block text-[10px] uppercase tracking-widest font-mono font-bold text-danger">Damaged Parts & Repair Cost</label>
+                  <label class="block text-[10px] uppercase tracking-widest font-mono font-bold text-danger">Damaged Parts (Name / Price / OEM / Ship)</label>
                   <button type="button" onclick="addDamagedPart()"
                     class="text-[10px] uppercase font-mono font-bold text-primary border border-primary/40 rounded px-3 py-1 hover:bg-primary/10">
                     + Add Part
                   </button>
                 </div>
                 <div id="damaged-parts-list" class="space-y-2"></div>
-                <p class="text-[9px] text-on-surface-faint font-mono italic mt-2">Repair costs are charged on top of vehicle price during shipping.</p>
+                <p class="text-[9px] text-on-surface-faint font-mono italic mt-2">Part price + shipping is added to vehicle price at checkout.</p>
               </div>
 
               <div class="col-span-2">
@@ -265,7 +313,7 @@
                     <% if (car.damagedParts && car.damagedParts.length) { %>
                       <span class="text-on-surface-faint">
                         (<%= car.damagedParts.length %> part<%= car.damagedParts.length > 1 ? 's' : '' %>,
-                        $<%= car.damagedParts.reduce((s,p) => s + (p.repairCost||0), 0).toLocaleString() %>)
+                        $<%= car.damagedParts.reduce((s,p) => s + (p.price||0) + (p.ship||0), 0).toLocaleString() %>)
                       </span>
                     <% } %>
                   <% } else { %>

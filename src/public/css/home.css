@@ -3,7 +3,7 @@
 body {
   background: #121414;
   color: #e2d9c5;
-  font-family: 'Inter', sans-serif;
+  font-family: 'Plus Jakarta Sans', system-ui, sans-serif;
   min-height: 100vh;
 }
 
@@ -36,7 +36,7 @@ body {
 .brand-icon { color: #fbbf24; font-size: 18px; }
 
 .brand-name {
-  font-family: 'Fraunces', serif;
+  font-family: 'Space Grotesk', system-ui, sans-serif;
   font-size: 18px;
   font-weight: 700;
   font-style: italic;
@@ -319,7 +319,7 @@ body {
 
 /* ── Vault Title ── */
 .vault-title {
-  font-family: 'Fraunces', serif;
+  font-family: 'Space Grotesk', system-ui, sans-serif;
   font-size: 52px;
   font-weight: 600;
   letter-spacing: -1.5px;
@@ -398,7 +398,7 @@ body {
 }
 
 .stat-card-value {
-  font-family: 'JetBrains Mono', monospace;
+  font-family: 'JetBrains Mono', ui-monospace, monospace;
   font-size: 32px;
   font-weight: 700;
   color: #fbbf24;

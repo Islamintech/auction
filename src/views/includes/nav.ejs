@@ -1,4 +1,4 @@
-<header class="fixed top-0 w-full h-[60px] z-50 bg-[#121414]/80 backdrop-blur-xl border-b border-primary/20 flex justify-center px-6">
+<header class="fixed top-0 w-full h-[60px] z-50 bg-background/80 backdrop-blur-xl border-b border-primary/20 flex justify-center px-6">
   <div class="w-full max-w-[1300px] flex justify-between items-center">
 
     <div class="nav-brand">
@@ -17,6 +17,10 @@
     </nav>
 
     <div class="flex items-center gap-4">
+      <button type="button" class="theme-toggle" onclick="toggleTheme()" aria-label="Toggle theme" title="Toggle theme">
+        <svg class="icon-sun" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41"/></svg>
+        <svg class="icon-moon" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+      </button>
       <a href="/admin/logout" onclick="return confirm('Logout?')"
         class="text-on-surface-secondary hover:text-danger transition-colors font-mono text-[10px] uppercase tracking-widest">
         Logout

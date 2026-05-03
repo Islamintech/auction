@@ -3,7 +3,7 @@
 body {
   background: #121414;
   color: #e2d9c5;
-  font-family: 'Inter', sans-serif;
+  font-family: 'Plus Jakarta Sans', system-ui, sans-serif;
   min-height: 100vh;
 }
 
@@ -46,7 +46,7 @@ body {
 .brand-icon { font-size: 32px; color: #fbbf24; }
 
 .brand-name {
-  font-family: 'Fraunces', serif;
+  font-family: 'Space Grotesk', system-ui, sans-serif;
   font-size: 28px;
   font-weight: 700;
   font-style: italic;

@@ -1,10 +1,12 @@
 import mongoose, { Schema } from "mongoose";
-import { CarStatus, CarBrand, CarColor, CarType, CarCondition } from "../libs/enums/car.enum";
+import { CarStatus, CarBrand, CarColor, CarType, CarCondition, CarFuel, CarTransmission } from "../libs/enums/car.enum";
 
 const damagedPartSchema = new Schema(
     {
         name: { type: String, required: true },
-        repairCost: { type: Number, required: true, min: 0 },
+        price: { type: Number, required: true, min: 0 },
+        oem: { type: String },
+        ship: { type: Number, min: 0, default: 0 },
     },
     { _id: false },
 );
@@ -28,6 +30,14 @@ const carSchema = new Schema(
             required: true,
         },
 
+        carMake: {
+            type: String,
+        },
+
+        carModel: {
+            type: String,
+        },
+
         carType: {
             type: String,
             enum: Object.values(CarType),
@@ -42,9 +52,29 @@ const carSchema = new Schema(
             default: CarCondition.INTACT,
         },
 
+        carFuel: {
+            type: String,
+            enum: Object.values(CarFuel),
+            default: CarFuel.PETROL,
+        },
+
+        carTransmission: {
+            type: String,
+            enum: Object.values(CarTransmission),
+            default: CarTransmission.AUTO,
+        },
+
         damagedParts: {
             type: [damagedPartSchema],
             default: [],
+        },
+
+        carDamage: {
+            type: String,
+        },
+
+        carDamageDesc: {
+            type: String,
         },
 
         carYear: {

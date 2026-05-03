@@ -122,17 +122,24 @@ function toggleDamagedSection() {
 function addDamagedPart() {
     const list = document.getElementById('damaged-parts-list');
     const row = document.createElement('div');
-    row.className = 'flex gap-2 items-center';
+    row.className = 'grid grid-cols-12 gap-2 items-center';
     row.innerHTML = `
-        <input type="text" name="damagedPartName" placeholder="e.g., Front bumper"
-          class="flex-[2] bg-black/40 border border-outline rounded-lg focus:border-primary text-on-surface px-3 py-2 text-sm outline-none" />
-        <div class="flex-1 relative">
+        <input type="text" name="damagedPartName" placeholder="Part name (e.g., Front bumper)"
+          class="col-span-4 bg-black/40 border border-outline rounded-lg focus:border-primary text-on-surface px-3 py-2 text-sm outline-none" />
+        <div class="col-span-2 relative">
           <span class="absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-faint text-sm">$</span>
-          <input type="number" name="damagedPartCost" min="0" placeholder="0"
+          <input type="number" name="damagedPartPrice" min="0" placeholder="Price"
             class="w-full bg-black/40 border border-outline rounded-lg focus:border-primary text-primary font-mono px-6 py-2 text-sm outline-none" />
         </div>
+        <input type="text" name="damagedPartOem" placeholder="OEM #"
+          class="col-span-3 bg-black/40 border border-outline rounded-lg focus:border-primary text-on-surface px-3 py-2 text-sm outline-none" />
+        <div class="col-span-2 relative">
+          <span class="absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-faint text-sm">$</span>
+          <input type="number" name="damagedPartShip" min="0" placeholder="Ship"
+            class="w-full bg-black/40 border border-outline rounded-lg focus:border-primary text-on-surface font-mono px-6 py-2 text-sm outline-none" />
+        </div>
         <button type="button" onclick="this.parentElement.remove()"
-          class="px-3 py-2 rounded border border-outline text-on-surface-faint hover:text-danger hover:border-danger text-xs">✕</button>
+          class="col-span-1 px-3 py-2 rounded border border-outline text-on-surface-faint hover:text-danger hover:border-danger text-xs">✕</button>
     `;
     list.appendChild(row);
 }

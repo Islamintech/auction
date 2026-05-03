@@ -38,6 +38,22 @@ export enum CarCondition {
     DAMAGED = 'DAMAGED',
 }
 
+export enum CarFuel {
+    PETROL = 'PETROL',
+    DIESEL = 'DIESEL',
+    HYBRID = 'HYBRID',
+    ELECTRIC = 'ELECTRIC',
+    LPG = 'LPG',
+    OTHER = 'OTHER',
+}
+
+export enum CarTransmission {
+    AUTO = 'AUTO',
+    MANUAL = 'MANUAL',
+    CVT = 'CVT',
+    DCT = 'DCT',
+}
+
 export enum CarColor {
     WHITE = 'WHITE',
     BLACK = 'BLACK',

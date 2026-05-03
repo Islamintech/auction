@@ -5,7 +5,7 @@
   color: #fbbf24;
   border: 1px solid rgba(251,191,36,0.2);
   padding: 2px 8px;
-  font-family: 'JetBrains Mono', monospace;
+  font-family: 'JetBrains Mono', ui-monospace, monospace;
   font-weight: 700;
   font-size: 0.65rem;
   letter-spacing: 0.05em;

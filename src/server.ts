@@ -6,7 +6,7 @@ import app from './app';
 mongoose.connect(process.env.MONGO_URL as string, {})
     .then(data => {
         console.log("MongoDB connection succeed");
-        const PORT = process.env.PORT ?? 3003;
+        const PORT = process.env.PORT ?? 3000;
         app.listen(PORT, function () {
             console.log(`The server is running successfully on http://localhost:${PORT} \n`);
             console.info(`The admin is running successfully on http://localhost:${PORT}/admin`)

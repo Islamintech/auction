@@ -4,7 +4,8 @@ import { T } from '../libs/types/common';
 import CarService from '../models/car.service';
 import { AdminRequest, ExtendedRequest } from '../libs/types/member';
 import { CarInput, CarInquiry, CarUpdateInput } from '../libs/types/car';
-import { CarBrand, CarColor, CarCondition, CarStatus, CarType } from '../libs/enums/car.enum';
+import { CarBrand, CarColor, CarCondition, CarFuel, CarStatus, CarTransmission, CarType } from '../libs/enums/car.enum';
+import { toClientCar, toClientCars } from '../libs/utils/carTransformer';
 
 const carService = new CarService();
 const carController: T = {};
@@ -29,7 +30,7 @@ carController.getCars = async (req: Request, res: Response) => {
         if (maxYear) inquiry.maxYear = Number(maxYear);
 
         const result = await carService.getCars(inquiry);
-        res.status(HttpCode.OK).json(result);
+        res.status(HttpCode.OK).json(toClientCars(result));
     } catch (err) {
         console.log('Error, getCars:', err);
         if (err instanceof Errors) res.status(err.code).json(err);
@@ -43,7 +44,7 @@ carController.getCar = async (req: ExtendedRequest, res: Response) => {
         const { id } = req.params;
         const memberId = req.member?._id ?? null;
         const result = await carService.getCar(memberId, String(id));
-        res.status(HttpCode.OK).json(result);
+        res.status(HttpCode.OK).json(toClientCar(result));
     } catch (err) {
         console.log('Error, getCar:', err);
         if (err instanceof Errors) res.status(err.code).json(err);
@@ -56,7 +57,7 @@ carController.likeCar = async (req: ExtendedRequest, res: Response) => {
         console.log('likeCar');
         const { id } = req.params;
         const result = await carService.likeCar(req.member._id, String(id));
-        res.status(HttpCode.OK).json(result);
+        res.status(HttpCode.OK).json(toClientCar(result));
     } catch (err) {
         console.log('Error, likeCar:', err);
         if (err instanceof Errors) res.status(err.code).json(err);
@@ -69,7 +70,7 @@ carController.commentCar = async (req: ExtendedRequest, res: Response) => {
         console.log('commentCar');
         const { id } = req.params;
         const result = await carService.commentCar(req.member._id, String(id), req.body);
-        res.status(HttpCode.OK).json(result);
+        res.status(HttpCode.OK).json(toClientCar(result));
     } catch (err) {
         console.log('Error, commentCar:', err);
         if (err instanceof Errors) res.status(err.code).json(err);
@@ -81,13 +82,15 @@ carController.commentCar = async (req: ExtendedRequest, res: Response) => {
 carController.getAllCars = async (req: Request, res: Response) => {
     try {
         const data = await carService.getAllCars();
-        res.render('cars', { 
+        res.render('cars', {
             cars: data,
             CarBrand: Object.values(CarBrand),
             CarColor: Object.values(CarColor),
             CarStatus: Object.values(CarStatus),
             CarType: Object.values(CarType),
             CarCondition: Object.values(CarCondition),
+            CarFuel: Object.values(CarFuel),
+            CarTransmission: Object.values(CarTransmission),
         });
     } catch (err) {
         console.log('Error, getAllCars:', err);
@@ -110,12 +113,16 @@ carController.createNewCar = async (req: AdminRequest, res: Response) => {
         const partNames: string[] = []
             .concat(req.body.damagedPartName || [])
             .filter((s: string) => s && s.trim().length > 0);
-        const partCosts: string[] = [].concat(req.body.damagedPartCost || []);
+        const partPrices: string[] = [].concat(req.body.damagedPartPrice || req.body.damagedPartCost || []);
+        const partOems: string[] = [].concat(req.body.damagedPartOem || []);
+        const partShips: string[] = [].concat(req.body.damagedPartShip || []);
 
         if (data.carCondition === CarCondition.DAMAGED && partNames.length > 0) {
             data.damagedParts = partNames.map((name: string, i: number) => ({
                 name: String(name).trim(),
-                repairCost: Number(partCosts[i]) || 0,
+                price: Number(partPrices[i]) || 0,
+                oem: partOems[i] ? String(partOems[i]).trim() : undefined,
+                ship: Number(partShips[i]) || 0,
             }));
         } else {
             data.damagedParts = [];
