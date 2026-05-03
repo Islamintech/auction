@@ -8,7 +8,7 @@ import ViewService from './View.service';
 import { ViewInput } from '../libs/types/view';
 import { ViewGroup } from '../libs/enums/view.enum';
 import { CarStatus } from '../libs/enums/car.enum';
-import PointService from './point.service';
+import PointService from './Point.service';
 import { PointAction } from '../libs/enums/point.enum';
 import LikeService from './Like.service';
 import { LikeInput } from '../libs/types/like';

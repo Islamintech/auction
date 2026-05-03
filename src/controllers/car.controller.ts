@@ -1,7 +1,7 @@
 import { Request, Response } from 'express';
 import Errors, { HttpCode, Message } from '../libs/Errors';
 import { T } from '../libs/types/common';
-import CarService from '../models/Car.service';
+import CarService from '../models/car.service';
 import { AdminRequest, ExtendedRequest } from '../libs/types/member';
 import { CarInput, CarInquiry, CarUpdateInput } from '../libs/types/car';
 import { CarBrand, CarColor, CarCondition, CarFuel, CarStatus, CarTransmission, CarType } from '../libs/enums/car.enum';

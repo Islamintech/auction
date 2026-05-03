@@ -1,7 +1,7 @@
 import { Request, Response } from 'express';
 import Errors, { HttpCode } from '../libs/Errors';
 import { T } from '../libs/types/common';
-import PointService from '../models/point.service';
+import PointService from '../models/Point.service';
 import { ExtendedRequest } from '../libs/types/member';
 import { PointInquiry } from '../libs/types/point';
 

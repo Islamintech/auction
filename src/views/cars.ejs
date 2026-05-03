@@ -280,6 +280,7 @@
             <tr class="hover:bg-white/[0.03] transition-colors group car-row"
               data-title="<%= car.carTitle?.toLowerCase() %>"
               data-brand="<%= car.carBrand?.toLowerCase() %>"
+              data-car="<%= encodeURIComponent(JSON.stringify(car)) %>"
             >
               <td class="px-8 py-5 font-mono text-on-surface-faint text-xs"><%= String(key+1).padStart(2,'0') %></td>
               <td class="px-4 py-5">
@@ -344,6 +345,10 @@
                 </select>
               </td>
               <td class="px-8 py-5 text-right">
+                <button onclick="openEditCarModal(this)"
+                  class="p-2 rounded hover:bg-white/10 text-on-surface-secondary hover:text-primary transition-colors" title="Edit">
+                  Edit
+                </button>
                 <button onclick="deleteCar('<%= car._id %>')"
                   class="p-2 rounded hover:bg-white/10 text-on-surface-secondary hover:text-danger transition-colors" title="Delete">
                   🗑
@@ -372,6 +377,151 @@
   </div>
 </main>
 
+<div id="edit-car-modal" class="fixed inset-0 z-50 hidden">
+  <div class="absolute inset-0 bg-black/70" onclick="closeEditCarModal()"></div>
+  <div class="relative mx-auto mt-10 mb-10 w-[calc(100%-32px)] max-w-5xl bg-surface rounded-card border border-outline shadow-2xl max-h-[90vh] overflow-y-auto">
+    <div class="px-8 py-5 border-b border-outline flex justify-between items-center">
+      <div>
+        <h3 class="font-headline text-sm font-bold text-on-surface uppercase tracking-widest">Update Vehicle Information</h3>
+        <p class="text-[10px] text-on-surface-secondary uppercase tracking-wider mt-0.5 font-mono">Edit listing details</p>
+      </div>
+      <button type="button" onclick="closeEditCarModal()" class="p-2 rounded hover:bg-white/10 text-on-surface-secondary hover:text-danger">X</button>
+    </div>
+
+    <form id="edit-car-form" class="p-8 grid grid-cols-12 gap-x-8 gap-y-6">
+      <input type="hidden" name="_id" />
+
+      <div class="col-span-12 md:col-span-8 grid grid-cols-2 gap-6">
+        <div class="col-span-2">
+          <label class="block text-[10px] uppercase tracking-widest font-mono font-bold text-primary mb-2">Listing Title *</label>
+          <input name="carTitle" type="text" required class="w-full bg-black/40 border border-outline rounded-lg focus:border-primary text-on-surface px-4 py-3 text-sm outline-none" />
+        </div>
+
+        <div>
+          <label class="block text-[10px] uppercase tracking-widest font-mono font-bold text-primary mb-2">Manufacturer Brand *</label>
+          <select name="carBrand" required class="custom-select w-full bg-black/40 border border-outline rounded-lg focus:border-primary text-on-surface px-4 py-3 text-sm outline-none">
+            <% CarBrand.map(function(brand) { %>
+              <option value="<%= brand %>"><%= brand.charAt(0) + brand.slice(1).toLowerCase() %></option>
+            <% }) %>
+          </select>
+        </div>
+
+        <div>
+          <label class="block text-[10px] uppercase tracking-widest font-mono font-bold text-primary mb-2">Body Type *</label>
+          <select name="carType" required class="custom-select w-full bg-black/40 border border-outline rounded-lg focus:border-primary text-on-surface px-4 py-3 text-sm outline-none">
+            <% CarType.map(function(t) { %>
+              <option value="<%= t %>"><%= t.charAt(0) + t.slice(1).toLowerCase() %></option>
+            <% }) %>
+          </select>
+        </div>
+
+        <div>
+          <label class="block text-[10px] uppercase tracking-widest font-mono font-bold text-primary mb-2">Condition *</label>
+          <select name="carCondition" id="edit-car-condition" required onchange="toggleEditDamagedSection()" class="custom-select w-full bg-black/40 border border-outline rounded-lg focus:border-primary text-on-surface px-4 py-3 text-sm outline-none">
+            <% CarCondition.map(function(c) { %>
+              <option value="<%= c %>"><%= c.charAt(0) + c.slice(1).toLowerCase() %></option>
+            <% }) %>
+          </select>
+        </div>
+
+        <div>
+          <label class="block text-[10px] uppercase tracking-widest font-mono font-bold text-primary mb-2">Status *</label>
+          <select name="carStatus" required class="custom-select w-full bg-black/40 border border-outline rounded-lg focus:border-primary text-on-surface px-4 py-3 text-sm outline-none">
+            <% CarStatus.map(function(status) { %>
+              <option value="<%= status %>"><%= status.charAt(0) + status.slice(1).toLowerCase() %></option>
+            <% }) %>
+          </select>
+        </div>
+
+        <div>
+          <label class="block text-[10px] uppercase tracking-widest font-mono font-bold text-primary mb-2">Model Year *</label>
+          <input name="carYear" type="number" required min="1990" max="2026" class="w-full bg-black/40 border border-outline rounded-lg focus:border-primary text-on-surface px-4 py-3 text-sm font-mono outline-none" />
+        </div>
+
+        <div>
+          <label class="block text-[10px] uppercase tracking-widest font-mono font-bold text-primary mb-2">Mileage (KM) *</label>
+          <input name="carMileage" type="number" required min="0" class="w-full bg-black/40 border border-outline rounded-lg focus:border-primary text-on-surface px-4 py-3 text-sm font-mono outline-none" />
+        </div>
+
+        <div>
+          <label class="block text-[10px] uppercase tracking-widest font-mono font-bold text-primary mb-2">Valuation ($) *</label>
+          <input name="carPrice" type="number" required min="0" class="w-full bg-black/40 border border-outline rounded-lg focus:border-primary text-primary font-bold px-4 py-3 text-sm font-mono outline-none" />
+        </div>
+
+        <div>
+          <label class="block text-[10px] uppercase tracking-widest font-mono font-bold text-primary mb-2">Color</label>
+          <select name="carColor" class="custom-select w-full bg-black/40 border border-outline rounded-lg focus:border-primary text-on-surface px-4 py-3 text-sm outline-none">
+            <option value="">Select Color</option>
+            <% CarColor.map(function(color) { %>
+              <option value="<%= color %>"><%= color.charAt(0) + color.slice(1).toLowerCase() %></option>
+            <% }) %>
+          </select>
+        </div>
+
+        <div>
+          <label class="block text-[10px] uppercase tracking-widest font-mono font-bold text-primary mb-2">Make</label>
+          <input name="carMake" type="text" class="w-full bg-black/40 border border-outline rounded-lg focus:border-primary text-on-surface px-4 py-3 text-sm outline-none" />
+        </div>
+
+        <div>
+          <label class="block text-[10px] uppercase tracking-widest font-mono font-bold text-primary mb-2">Model</label>
+          <input name="carModel" type="text" class="w-full bg-black/40 border border-outline rounded-lg focus:border-primary text-on-surface px-4 py-3 text-sm outline-none" />
+        </div>
+
+        <div>
+          <label class="block text-[10px] uppercase tracking-widest font-mono font-bold text-primary mb-2">Fuel</label>
+          <select name="carFuel" class="custom-select w-full bg-black/40 border border-outline rounded-lg focus:border-primary text-on-surface px-4 py-3 text-sm outline-none">
+            <% CarFuel.map(function(f) { %>
+              <option value="<%= f %>"><%= f.charAt(0) + f.slice(1).toLowerCase() %></option>
+            <% }) %>
+          </select>
+        </div>
+
+        <div>
+          <label class="block text-[10px] uppercase tracking-widest font-mono font-bold text-primary mb-2">Transmission</label>
+          <select name="carTransmission" class="custom-select w-full bg-black/40 border border-outline rounded-lg focus:border-primary text-on-surface px-4 py-3 text-sm outline-none">
+            <% CarTransmission.map(function(t) { %>
+              <option value="<%= t %>"><%= t.charAt(0) + t.slice(1).toLowerCase() %></option>
+            <% }) %>
+          </select>
+        </div>
+
+        <div class="col-span-2" id="edit-damaged-section" style="display:none">
+          <div class="grid grid-cols-2 gap-4 mb-4">
+            <div>
+              <label class="block text-[10px] uppercase tracking-widest font-mono font-bold text-danger mb-2">Damage Summary</label>
+              <input name="carDamage" type="text" class="w-full bg-black/40 border border-outline rounded-lg focus:border-primary text-on-surface px-4 py-3 text-sm outline-none" />
+            </div>
+            <div>
+              <label class="block text-[10px] uppercase tracking-widest font-mono font-bold text-danger mb-2">Damage Description</label>
+              <input name="carDamageDesc" type="text" class="w-full bg-black/40 border border-outline rounded-lg focus:border-primary text-on-surface px-4 py-3 text-sm outline-none" />
+            </div>
+          </div>
+          <div class="flex justify-between items-center mb-2">
+            <label class="block text-[10px] uppercase tracking-widest font-mono font-bold text-danger">Damaged Parts</label>
+            <button type="button" onclick="addEditDamagedPart()" class="text-[10px] uppercase font-mono font-bold text-primary border border-primary/40 rounded px-3 py-1 hover:bg-primary/10">+ Add Part</button>
+          </div>
+          <div id="edit-damaged-parts-list" class="space-y-2"></div>
+        </div>
+
+        <div class="col-span-2">
+          <label class="block text-[10px] uppercase tracking-widest font-mono font-bold text-primary mb-2">Description & Notes</label>
+          <textarea name="carDesc" rows="4" class="w-full bg-black/40 border border-outline rounded-lg focus:border-primary text-on-surface px-4 py-3 text-sm resize-none outline-none"></textarea>
+        </div>
+      </div>
+
+      <div class="col-span-12 md:col-span-4">
+        <label class="block text-[10px] uppercase tracking-widest font-mono font-bold text-primary mb-2">Current Gallery</label>
+        <div id="edit-car-images" class="grid grid-cols-2 gap-2 mb-6"></div>
+        <p class="text-[9px] text-on-surface-faint font-mono italic mb-6">This update edits listing information. Gallery replacement can be added separately if needed.</p>
+        <div class="flex gap-3">
+          <button type="button" onclick="closeEditCarModal()" class="flex-1 py-3 rounded-lg border border-outline text-on-surface-secondary uppercase font-mono text-[10px] font-bold hover:bg-white/10 transition-all">Cancel</button>
+          <button type="submit" class="flex-[2] py-3 rounded-lg bg-primary text-background uppercase font-mono text-[10px] font-bold hover:bg-primary/80 transition-all">Update Info</button>
+        </div>
+      </div>
+    </form>
+  </div>
+</div>
 
 <script src="/js/cars.js"></script>
 </body>
