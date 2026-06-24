@@ -34,11 +34,6 @@ class CarService {
 
         if (inquiry.carBrand) match.carBrand = inquiry.carBrand;
         if (inquiry.search) match.carTitle = { $regex: new RegExp(inquiry.search, 'i') };
-        if (inquiry.minPrice || inquiry.maxPrice) {
-            match.carPrice = {};
-            if (inquiry.minPrice) match.carPrice.$gte = inquiry.minPrice;
-            if (inquiry.maxPrice) match.carPrice.$lte = inquiry.maxPrice;
-        }
         if (inquiry.minYear || inquiry.maxYear) {
             match.carYear = {};
             if (inquiry.minYear) match.carYear.$gte = inquiry.minYear;

@@ -176,8 +176,6 @@ function openEditCarModal(button) {
         'carModel',
         'carFuel',
         'carTransmission',
-        'carDamage',
-        'carDamageDesc',
         'carDesc',
     ].forEach((name) => {
         if (form.elements[name]) form.elements[name].value = car[name] ?? '';
@@ -195,20 +193,12 @@ function openEditCarModal(button) {
         imageGrid.innerHTML = '<div class="col-span-2 h-24 rounded border border-outline bg-black/40 flex items-center justify-center text-on-surface-faint text-xs font-mono uppercase">No images</div>';
     }
 
-    toggleEditDamagedSection();
     modal.classList.remove('hidden');
 }
 
 function closeEditCarModal() {
     const modal = document.getElementById('edit-car-modal');
     if (modal) modal.classList.add('hidden');
-}
-
-function toggleEditDamagedSection() {
-    const condition = document.getElementById('edit-car-condition');
-    const section = document.getElementById('edit-damaged-section');
-    if (!condition || !section) return;
-    section.style.display = condition.value === 'DAMAGED' ? '' : 'none';
 }
 
 document.addEventListener('DOMContentLoaded', () => {
@@ -219,7 +209,7 @@ document.addEventListener('DOMContentLoaded', () => {
         event.preventDefault();
         const carId = editForm.elements._id.value;
         const payload = {};
-        const optionalFields = ['carVin', 'carColor', 'carMake', 'carModel', 'carDamage', 'carDamageDesc', 'carDesc'];
+        const optionalFields = ['carVin', 'carColor', 'carMake', 'carModel', 'carDesc'];
 
         [
             'carStatus',
@@ -236,7 +226,7 @@ document.addEventListener('DOMContentLoaded', () => {
         ].forEach((name) => {
             const value = editForm.elements[name]?.value;
             if (optionalFields.includes(name) && value === '') return;
-            payload[name] = ['carYear', 'carMileage', 'carPrice'].includes(name) ? Number(value) : value;
+            payload[name] = ['carYear', 'carMileage'].includes(name) ? Number(value) : value;
         });
 
         fetch(`/admin/car/${carId}`, {
@@ -285,15 +275,3 @@ function validateCarForm() {
     }
     return true;
 }
-
-// Show/hide the damage summary + description based on condition
-function toggleDamagedSection() {
-    const cond = document.getElementById('carCondition').value;
-    const section = document.getElementById('damaged-section');
-    if (!section) return;
-    section.style.display = cond === 'DAMAGED' ? '' : 'none';
-}
-
-document.addEventListener('DOMContentLoaded', () => {
-    if (document.getElementById('carCondition')) toggleDamagedSection();
-});

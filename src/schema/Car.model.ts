@@ -74,14 +74,6 @@ const carSchema = new Schema(
             default: CarTransmission.AUTO,
         },
 
-        carDamage: {
-            type: String,
-        },
-
-        carDamageDesc: {
-            type: String,
-        },
-
         carYear: {
             type: Number,
             required: true,
@@ -93,8 +85,9 @@ const carSchema = new Schema(
         },
 
         carPrice: {
-            type: Number,
+            type: String,
             required: true,
+            trim: true,
         },
 
         carColor: {

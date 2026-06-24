@@ -18,11 +18,9 @@ export interface Car {
     carTransmission?: CarTransmission;
     carYear: number;
     carMileage: number;
-    carPrice: number;
+    carPrice: string;
     carColor?: CarColor;
     carDesc?: string;
-    carDamage?: string;
-    carDamageDesc?: string;
     carImages: string[];
     carViewCount: number;
     carLikeCount: number;
@@ -45,11 +43,9 @@ export interface CarInput {
     carTransmission?: CarTransmission;
     carYear: number;
     carMileage: number;
-    carPrice: number;
+    carPrice: string;
     carColor?: CarColor;
     carDesc?: string;
-    carDamage?: string;
-    carDamageDesc?: string;
     carImages: string[];
 }
 
@@ -70,11 +66,9 @@ export interface CarUpdateInput {
     carTransmission?: CarTransmission;
     carYear?: number;
     carMileage?: number;
-    carPrice?: number;
+    carPrice?: string;
     carColor?: CarColor;
     carDesc?: string;
-    carDamage?: string;
-    carDamageDesc?: string;
     carImages?: string[];
 }
 
@@ -87,8 +81,6 @@ export interface CarInquiry {
     carCondition?: CarCondition;
     carStatus?: CarStatus;
     search?: string;
-    minPrice?: number;
-    maxPrice?: number;
     minYear?: number;
     maxYear?: number;
 }

@@ -33,8 +33,6 @@ export const toClientCar = (car: any) => {
         price: c.carPrice,
         color: c.carColor,
         desc: c.carDesc,
-        damage: c.carDamage,
-        damageDesc: c.carDamageDesc,
         image: images[0] || null,
         images,
         status: c.carStatus,

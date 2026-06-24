@@ -14,7 +14,7 @@ const carController: T = {};
 carController.getCars = async (req: Request, res: Response) => {
     try {
         console.log('getCars');
-        const { page, limit, order, carBrand, search, minPrice, maxPrice, minYear, maxYear } = req.query;
+        const { page, limit, order, carBrand, search, minYear, maxYear } = req.query;
 
         const inquiry: CarInquiry = {
             order: order ? String(order) : 'createdAt',
@@ -24,8 +24,6 @@ carController.getCars = async (req: Request, res: Response) => {
 
         if (carBrand) inquiry.carBrand = carBrand as CarBrand;
         if (search) inquiry.search = String(search);
-        if (minPrice) inquiry.minPrice = Number(minPrice);
-        if (maxPrice) inquiry.maxPrice = Number(maxPrice);
         if (minYear) inquiry.minYear = Number(minYear);
         if (maxYear) inquiry.maxYear = Number(maxYear);
 
