@@ -226,7 +226,7 @@ document.addEventListener('DOMContentLoaded', () => {
         ].forEach((name) => {
             const value = editForm.elements[name]?.value;
             if (optionalFields.includes(name) && value === '') return;
-            payload[name] = ['carYear', 'carMileage'].includes(name) ? Number(value) : value;
+            payload[name] = name === 'carMileage' ? Number(value) : value;
         });
 
         fetch(`/admin/car/${carId}`, {

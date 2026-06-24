@@ -34,11 +34,6 @@ class CarService {
 
         if (inquiry.carBrand) match.carBrand = inquiry.carBrand;
         if (inquiry.search) match.carTitle = { $regex: new RegExp(inquiry.search, 'i') };
-        if (inquiry.minYear || inquiry.maxYear) {
-            match.carYear = {};
-            if (inquiry.minYear) match.carYear.$gte = inquiry.minYear;
-            if (inquiry.maxYear) match.carYear.$lte = inquiry.maxYear;
-        }
 
         const sort: T = inquiry.order === 'carPrice'
             ? { [inquiry.order]: 1 }

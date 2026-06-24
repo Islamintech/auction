@@ -16,7 +16,7 @@ export interface Car {
     carCondition: CarCondition;
     carFuel?: CarFuel;
     carTransmission?: CarTransmission;
-    carYear: number;
+    carYear: string;
     carMileage: number;
     carPrice: string;
     carColor?: CarColor;
@@ -41,7 +41,7 @@ export interface CarInput {
     carCondition: CarCondition;
     carFuel?: CarFuel;
     carTransmission?: CarTransmission;
-    carYear: number;
+    carYear: string;
     carMileage: number;
     carPrice: string;
     carColor?: CarColor;
@@ -64,7 +64,7 @@ export interface CarUpdateInput {
     carCondition?: CarCondition;
     carFuel?: CarFuel;
     carTransmission?: CarTransmission;
-    carYear?: number;
+    carYear?: string;
     carMileage?: number;
     carPrice?: string;
     carColor?: CarColor;
@@ -81,6 +81,4 @@ export interface CarInquiry {
     carCondition?: CarCondition;
     carStatus?: CarStatus;
     search?: string;
-    minYear?: number;
-    maxYear?: number;
 }

@@ -75,8 +75,9 @@ const carSchema = new Schema(
         },
 
         carYear: {
-            type: Number,
+            type: String,
             required: true,
+            trim: true,
         },
 
         carMileage: {
