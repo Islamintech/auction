@@ -8,32 +8,62 @@
 </script>
 <script type="text/javascript" src="/js/main.js"></script>
 
-<!-- PWA install prompt: nudge mobile admins to add the app to their home screen -->
-<div id="pwa-install-banner"
-  style="display:none;position:fixed;left:12px;right:12px;bottom:12px;z-index:9999;
-         background:rgb(var(--surface));color:rgb(var(--on-surface));
-         border:1px solid rgb(var(--primary) / 0.35);border-radius:14px;
-         box-shadow:0 12px 40px -8px rgba(0,0,0,0.5);padding:14px 16px;
-         max-width:480px;margin:0 auto;font-family:'Plus Jakarta Sans',system-ui,sans-serif;">
-  <div style="display:flex;align-items:center;gap:12px;">
-    <img src="/img/logo.png" alt="" style="width:42px;height:42px;border-radius:10px;flex-shrink:0;" />
-    <div style="flex:1;min-width:0;">
-      <div style="font-weight:700;font-size:14px;">Install AutoAuction Admin</div>
-      <div id="pwa-install-text" style="font-size:12px;opacity:0.7;margin-top:2px;line-height:1.4;">
-        Add it to your home screen for quick, app-like access.
+<!-- iPhone "Add to Home Screen" guide: iOS has no install API, so we guide the gesture -->
+<div id="pwa-install-overlay"
+  style="display:none;position:fixed;inset:0;z-index:9999;background:rgba(0,0,0,0.55);
+         font-family:'Plus Jakarta Sans',system-ui,sans-serif;">
+  <div id="pwa-install-card"
+    style="position:absolute;left:12px;right:12px;bottom:14px;
+           background:rgb(var(--surface));color:rgb(var(--on-surface));
+           border:1px solid rgb(var(--primary) / 0.35);border-radius:16px;
+           box-shadow:0 20px 50px -10px rgba(0,0,0,0.6);padding:18px 18px 16px;
+           max-width:460px;margin:0 auto;">
+    <div style="display:flex;align-items:center;gap:12px;">
+      <img src="/img/logo.png" alt="" style="width:46px;height:46px;border-radius:11px;flex-shrink:0;" />
+      <div style="flex:1;min-width:0;">
+        <div style="font-weight:700;font-size:15px;">Add AutoAuction to your iPhone</div>
+        <div style="font-size:12px;opacity:0.65;margin-top:2px;">Get one-tap, full-screen access from your home screen.</div>
+      </div>
+      <button id="pwa-dismiss" aria-label="Close"
+        style="border:none;background:transparent;color:rgb(var(--on-surface) / 0.5);
+               font-size:22px;line-height:1;cursor:pointer;padding:2px 6px;">&times;</button>
+    </div>
+
+    <div id="pwa-ios-steps" style="margin-top:14px;display:flex;flex-direction:column;gap:10px;">
+      <div style="display:flex;align-items:center;gap:10px;font-size:13px;">
+        <span style="flex-shrink:0;width:22px;height:22px;border-radius:6px;background:rgb(var(--primary) / 0.15);
+                     color:rgb(var(--primary));font-weight:700;display:inline-flex;align-items:center;justify-content:center;">1</span>
+        <span>Tap the <b>Share</b> button
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="rgb(var(--primary))" stroke-width="2"
+               stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-2px;margin:0 2px;">
+            <path d="M12 16V4M8 8l4-4 4 4"/><path d="M5 12v7a1 1 0 001 1h12a1 1 0 001-1v-7"/>
+          </svg>
+          in the Safari toolbar
+        </span>
+      </div>
+      <div style="display:flex;align-items:center;gap:10px;font-size:13px;">
+        <span style="flex-shrink:0;width:22px;height:22px;border-radius:6px;background:rgb(var(--primary) / 0.15);
+                     color:rgb(var(--primary));font-weight:700;display:inline-flex;align-items:center;justify-content:center;">2</span>
+        <span>Choose <b>“Add to Home Screen”</b></span>
+      </div>
+      <div style="display:flex;align-items:center;gap:10px;font-size:13px;">
+        <span style="flex-shrink:0;width:22px;height:22px;border-radius:6px;background:rgb(var(--primary) / 0.15);
+                     color:rgb(var(--primary));font-weight:700;display:inline-flex;align-items:center;justify-content:center;">3</span>
+        <span>Tap <b>Add</b> — done!</span>
       </div>
     </div>
-  </div>
-  <div style="display:flex;gap:8px;margin-top:12px;justify-content:flex-end;">
-    <button id="pwa-dismiss"
-      style="padding:8px 14px;border-radius:9px;border:1px solid rgb(var(--outline) / 0.35);
-             background:transparent;color:rgb(var(--on-surface) / 0.7);font-size:12px;font-weight:600;cursor:pointer;">
-      Not now
-    </button>
-    <button id="pwa-install-btn"
-      style="padding:8px 18px;border-radius:9px;border:none;background:rgb(var(--primary));
-             color:rgb(var(--background));font-size:12px;font-weight:700;cursor:pointer;">
-      Install
+
+    <!-- Shown only if they opened the site in a non-Safari iOS browser -->
+    <div id="pwa-ios-safari-note" style="display:none;margin-top:14px;font-size:12.5px;line-height:1.5;
+         background:rgb(var(--primary) / 0.1);border-radius:10px;padding:10px 12px;">
+      On iPhone, “Add to Home Screen” only works in <b>Safari</b>.
+      Open this page in Safari, then try again.
+    </div>
+
+    <button id="pwa-got-it"
+      style="margin-top:16px;width:100%;padding:11px;border-radius:10px;border:none;
+             background:rgb(var(--primary));color:rgb(var(--background));font-size:13px;font-weight:700;cursor:pointer;">
+      Got it
     </button>
   </div>
 </div>
@@ -41,23 +71,26 @@
 <script>
 (function () {
   var FALLBACK_DELAY_MS = 30000;         // generic nudge on normal navigation
-  var LOGIN_DELAY_MS = 1200;             // right after login, give the browser a beat
+  var LOGIN_DELAY_MS = 1200;             // right after login, give the page a beat
   var SNOOZE_MS = 7 * 24 * 3600 * 1000;  // re-ask at most weekly after dismissal
   var STORAGE_KEY = 'pwaInstallDismissedAt';
 
-  // Just logged in? The redirect carries ?pwa=1 — show the offer immediately
-  // and ignore the weekly snooze, since this is a deliberate sign-in moment.
+  // Just logged in? The redirect carries ?pwa=1 — show immediately and ignore
+  // the weekly snooze, since this is a deliberate sign-in moment.
   var loginTrigger = new URLSearchParams(window.location.search).get('pwa') === '1';
 
-  // Skip if already installed / running as an installed app.
-  var standalone = window.matchMedia('(display-mode: standalone)').matches
-    || window.navigator.standalone === true;
-  if (standalone) return;
+  // iPhone / iPad only — this guide is for iOS Safari's manual install gesture.
+  var ua = navigator.userAgent;
+  var isIOS = /iPhone|iPad|iPod/i.test(ua)
+    || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1); // iPadOS 13+
+  if (!isIOS) return;
 
-  // Mobile only — desktop admins don't need a home-screen shortcut.
-  var isMobile = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent)
-    || window.matchMedia('(max-width: 768px)').matches;
-  if (!isMobile) return;
+  // Already installed / launched from the home screen — nothing to do.
+  if (window.navigator.standalone === true
+    || window.matchMedia('(display-mode: standalone)').matches) return;
+
+  // "Add to Home Screen" exists only in Safari, not Chrome/Firefox/in-app webviews on iOS.
+  var isSafari = /Safari/i.test(ua) && !/CriOS|FxiOS|EdgiOS|OPiOS|GSA/i.test(ua);
 
   // Respect a recent dismissal (unless this is a fresh login).
   if (!loginTrigger) {
@@ -67,66 +100,33 @@
     } catch (e) {}
   }
 
-  // Register the service worker (required for the Android install prompt).
-  if ('serviceWorker' in navigator) {
-    navigator.serviceWorker.register('/sw.js').catch(function () {});
-  }
-
-  var deferredPrompt = null;
-  var shown = false;
-  var timerElapsed = false;
-  var isIOS = /iPhone|iPad|iPod/i.test(navigator.userAgent) && !window.MSStream;
-
-  window.addEventListener('beforeinstallprompt', function (e) {
-    e.preventDefault();          // stop Chrome's mini-infobar; we show our own
-    deferredPrompt = e;
-    // If our timer already fired but the event hadn't arrived yet, show now.
-    if (timerElapsed) attemptShow();
-  });
-
   function dismiss() {
-    var banner = document.getElementById('pwa-install-banner');
-    if (banner) banner.style.display = 'none';
+    var overlay = document.getElementById('pwa-install-overlay');
+    if (overlay) overlay.style.display = 'none';
     try { localStorage.setItem(STORAGE_KEY, String(Date.now())); } catch (e) {}
   }
 
-  function attemptShow() {
-    if (shown || standalone) return;
-    var banner = document.getElementById('pwa-install-banner');
-    var installBtn = document.getElementById('pwa-install-btn');
-    var text = document.getElementById('pwa-install-text');
-    if (!banner) return;
-
-    if (deferredPrompt) {
-      // Android / Chrome: real install flow — clicking "Add" installs it.
-      installBtn.onclick = function () {
-        deferredPrompt.prompt();
-        deferredPrompt.userChoice.finally(function () {
-          deferredPrompt = null;
-          dismiss();
-        });
-      };
-    } else if (isIOS) {
-      // iOS Safari has no install API — show the manual gesture instead.
-      text.innerHTML = 'Tap the Share icon, then choose <b>“Add to Home Screen”</b>.';
-      installBtn.textContent = 'Got it';
-      installBtn.onclick = dismiss;
-    } else {
-      // No install support yet and not iOS — wait for beforeinstallprompt.
-      return;
+  function show() {
+    var overlay = document.getElementById('pwa-install-overlay');
+    if (!overlay) return;
+    if (!isSafari) {
+      // Can't use the gesture here — explain and hide the step list.
+      var steps = document.getElementById('pwa-ios-steps');
+      var note = document.getElementById('pwa-ios-safari-note');
+      if (steps) steps.style.display = 'none';
+      if (note) note.style.display = 'block';
     }
-
-    banner.style.display = 'block';
-    shown = true;
+    overlay.style.display = 'block';
   }
 
   document.getElementById('pwa-dismiss').addEventListener('click', dismiss);
-  window.addEventListener('appinstalled', dismiss);
+  document.getElementById('pwa-got-it').addEventListener('click', dismiss);
+  // Tapping the dimmed backdrop closes it too.
+  document.getElementById('pwa-install-overlay').addEventListener('click', function (e) {
+    if (e.target === this) dismiss();
+  });
 
-  setTimeout(function () {
-    timerElapsed = true;
-    attemptShow();
-  }, loginTrigger ? LOGIN_DELAY_MS : FALLBACK_DELAY_MS);
+  setTimeout(show, loginTrigger ? LOGIN_DELAY_MS : FALLBACK_DELAY_MS);
 })();
 </script>
 </body>
