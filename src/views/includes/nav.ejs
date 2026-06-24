@@ -26,7 +26,7 @@
         class="hidden md:inline text-on-surface-secondary hover:text-danger transition-colors font-mono text-[10px] uppercase tracking-widest">
         Logout
       </a>
-      <div class="hidden md:flex h-8 w-8 rounded-full bg-surface items-center justify-center border border-outline text-primary font-mono text-xs font-bold overflow-hidden">
+      <div class="flex h-8 w-8 rounded-full bg-surface items-center justify-center border border-outline text-primary font-mono text-xs font-bold overflow-hidden flex-shrink-0">
         <% if(member && member.memberImage) { %>
           <img src="<%= imgUrl(member.memberImage) %>" class="w-full h-full object-cover" />
         <% } else if(member) { %>
