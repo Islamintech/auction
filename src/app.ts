@@ -37,7 +37,11 @@ app.use(morgan(MORGAN_FORMAT));
 
 /** 2 - Sessions */
 const isProd = process.env.NODE_ENV === 'production';
-if (isProd) app.set('trust proxy', 1);  // behind a reverse proxy (nginx/render/heroku)
+// Trust the full proxy chain (Railway/Render/Heroku can use several hops) so
+// req.secure is derived from X-Forwarded-Proto. Without this, express-session
+// sees the request as insecure and silently drops the `secure` session cookie,
+// logging the user out on every refresh in production.
+if (isProd) app.set('trust proxy', true);
 
 app.use(
     session({
