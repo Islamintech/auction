@@ -1,17 +1,14 @@
 import { ObjectId } from "mongoose";
 import { CarBrand, CarColor, CarCondition, CarFuel, CarStatus, CarTransmission, CarType } from "../enums/car.enum";
 
-export interface DamagedPart {
-    name: string;
-    price: number;
-    oem?: string;
-    ship?: number;
-}
-
 export interface Car {
     _id: ObjectId;
     carStatus: CarStatus;
     carTitle: string;
+    carVin?: string;
+    buyerName?: string;
+    salePrice?: number;
+    saleDate?: Date;
     carBrand: CarBrand;
     carMake?: string;
     carModel?: string;
@@ -27,7 +24,6 @@ export interface Car {
     carDamage?: string;
     carDamageDesc?: string;
     carImages: string[];
-    damagedParts: DamagedPart[];
     carViewCount: number;
     carLikeCount: number;
     carCommentCount: number;
@@ -39,6 +35,7 @@ export interface Car {
 export interface CarInput {
     carStatus?: CarStatus;
     carTitle: string;
+    carVin?: string;
     carBrand: CarBrand;
     carMake?: string;
     carModel?: string;
@@ -54,13 +51,16 @@ export interface CarInput {
     carDamage?: string;
     carDamageDesc?: string;
     carImages: string[];
-    damagedParts?: DamagedPart[];
 }
 
 export interface CarUpdateInput {
     _id: ObjectId;
     carStatus?: CarStatus;
     carTitle?: string;
+    carVin?: string;
+    buyerName?: string;
+    salePrice?: number;
+    saleDate?: Date | string;
     carBrand?: CarBrand;
     carMake?: string;
     carModel?: string;
@@ -76,7 +76,6 @@ export interface CarUpdateInput {
     carDamage?: string;
     carDamageDesc?: string;
     carImages?: string[];
-    damagedParts?: DamagedPart[];
 }
 
 export interface CarInquiry {

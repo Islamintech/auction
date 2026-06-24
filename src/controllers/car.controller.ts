@@ -17,9 +17,9 @@ carController.getCars = async (req: Request, res: Response) => {
         const { page, limit, order, carBrand, search, minPrice, maxPrice, minYear, maxYear } = req.query;
 
         const inquiry: CarInquiry = {
-            order: String(order),
-            page: Number(page),
-            limit: Number(limit),
+            order: order ? String(order) : 'createdAt',
+            page: Number(page) || 1,
+            limit: Number(limit) || 12,
         };
 
         if (carBrand) inquiry.carBrand = carBrand as CarBrand;
@@ -78,6 +78,53 @@ carController.commentCar = async (req: ExtendedRequest, res: Response) => {
     }
 };
 
+carController.verifyCarByVin = async (req: Request, res: Response) => {
+    try {
+        const { vin } = req.params;
+        const car: any = await carService.getCarByVin(String(vin));
+
+        if (!car) {
+            return res.status(HttpCode.OK).json({ found: false, sold: false });
+        }
+
+        const sold = car.carStatus === CarStatus.SOLD;
+        res.status(HttpCode.OK).json({
+            found: true,
+            sold,
+            vin: car.carVin,
+            title: car.carTitle,
+            brand: car.carBrand,
+            year: car.carYear,
+            buyerName: sold ? car.buyerName : null,
+            salePrice: sold ? car.salePrice : null,
+            saleDate: sold ? car.saleDate : null,
+            images: Array.isArray(car.carImages) ? car.carImages : [],
+        });
+    } catch (err) {
+        console.log('Error, verifyCarByVin:', err);
+        if (err instanceof Errors) res.status(err.code).json(err);
+        else res.status(Errors.standart.code).json(Errors.standart.message);
+    }
+};
+
+carController.vinLookup = async (req: Request, res: Response) => {
+    try {
+        const vin = req.query.vin ? String(req.query.vin).trim() : '';
+        let car = null;
+        let searched = false;
+
+        if (vin) {
+            searched = true;
+            car = await carService.getCarByVin(vin);
+        }
+
+        res.render('vin-lookup', { vin, car, searched });
+    } catch (err) {
+        console.log('Error, vinLookup:', err);
+        res.render('vin-lookup', { vin: '', car: null, searched: false });
+    }
+};
+
 /** SSR **/
 carController.getAllCars = async (req: Request, res: Response) => {
     try {
@@ -109,24 +156,6 @@ carController.createNewCar = async (req: AdminRequest, res: Response) => {
         data.carImages = req.files?.map((ele) => {
             return ele.path.replace(/\\/g, '/');
         });
-
-        const partNames: string[] = []
-            .concat(req.body.damagedPartName || [])
-            .filter((s: string) => s && s.trim().length > 0);
-        const partPrices: string[] = [].concat(req.body.damagedPartPrice || req.body.damagedPartCost || []);
-        const partOems: string[] = [].concat(req.body.damagedPartOem || []);
-        const partShips: string[] = [].concat(req.body.damagedPartShip || []);
-
-        if (data.carCondition === CarCondition.DAMAGED && partNames.length > 0) {
-            data.damagedParts = partNames.map((name: string, i: number) => ({
-                name: String(name).trim(),
-                price: Number(partPrices[i]) || 0,
-                oem: partOems[i] ? String(partOems[i]).trim() : undefined,
-                ship: Number(partShips[i]) || 0,
-            }));
-        } else {
-            data.damagedParts = [];
-        }
 
         await carService.createNewCar(data);
 

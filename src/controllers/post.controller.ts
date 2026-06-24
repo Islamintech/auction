@@ -18,9 +18,9 @@ postController.getPosts = async (req: Request, res: Response) => {
         const { page, limit, order, postType, search } = req.query;
 
         const inquiry: PostInquiry = {
-            order: String(order),
-            page: Number(page),
-            limit: Number(limit),
+            order: order ? String(order) : 'createdAt',
+            page: Number(page) || 1,
+            limit: Number(limit) || 12,
         };
 
         if (postType) inquiry.postType = postType as PostType;

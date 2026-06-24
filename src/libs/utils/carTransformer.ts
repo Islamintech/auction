@@ -16,6 +16,10 @@ export const toClientCar = (car: any) => {
     return {
         id: String(c._id),
         title: c.carTitle,
+        vin: c.carVin,
+        buyerName: c.buyerName,
+        salePrice: c.salePrice,
+        saleDate: c.saleDate,
         brand: c.carBrand,
         make: c.carMake,
         model: c.carModel,
@@ -31,7 +35,6 @@ export const toClientCar = (car: any) => {
         desc: c.carDesc,
         damage: c.carDamage,
         damageDesc: c.carDamageDesc,
-        damagedParts: c.damagedParts || [],
         image: images[0] || null,
         images,
         status: c.carStatus,

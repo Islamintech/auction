@@ -24,8 +24,12 @@ router.post(
 );
 router.get('/member/top-users', memberController.getTopUsers);
 
+/** Public VIN lookup (SSR page) */
+router.get('/vin', carController.vinLookup);
+
 /** Cars */
 router.get('/car/all', carController.getCars);
+router.get('/car/verify/:vin', carController.verifyCarByVin);
 router.get(
     '/car/:id',
     memberController.retrieveAuth,

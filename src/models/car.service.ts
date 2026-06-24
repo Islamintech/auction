@@ -192,6 +192,12 @@ class CarService {
         return result;
     }
 
+    public async getCarByVin(vin: string): Promise<Car | null> {
+        const normalized = vin.trim().toUpperCase();
+        if (!normalized) return null;
+        return await this.carModel.findOne({ carVin: normalized }).exec();
+    }
+
     /** SSR — Admin Panel */
 
     public async getAllCars(): Promise<Car[]> {
@@ -211,8 +217,18 @@ class CarService {
 
     public async updateChosenCar(id: string, input: CarUpdateInput): Promise<Car> {
         const carId = shapeIntoMongooseObjectId(id);
+
+        const update: T = { ...input };
+        if (input.carStatus && input.carStatus !== CarStatus.SOLD) {
+            // Clear sale details when a car is no longer marked as sold.
+            delete update.buyerName;
+            delete update.salePrice;
+            delete update.saleDate;
+            update.$unset = { buyerName: '', salePrice: '', saleDate: '' };
+        }
+
         const result = await this.carModel
-            .findOneAndUpdate({ _id: carId }, input, { new: true })
+            .findOneAndUpdate({ _id: carId }, update, { new: true })
             .exec();
         if (!result) throw new Errors(HttpCode.NOT_MODIFIED, Message.UPDATED_FAILED);
         return result;

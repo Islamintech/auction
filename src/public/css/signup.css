@@ -226,6 +226,14 @@ body {
 /* ── Responsive ── */
 @media (max-width: 768px) {
   .signup-left { display: none; }
-  .signup-right { padding: 32px 24px; }
+  .signup-right { padding: 32px 24px; align-items: flex-start; }
   .form-row { grid-template-columns: 1fr; }
+}
+
+@media (max-width: 420px) {
+  .signup-right { padding: 24px 16px; }
+  .form-header { margin-bottom: 24px; }
+  .form-title { font-size: 22px; }
+  .image-upload-area { gap: 14px; padding: 16px; }
+  .image-preview { width: 56px; height: 56px; }
 }

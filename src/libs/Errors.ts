@@ -19,7 +19,7 @@ export enum Message {
     USED_NICK_PHONE = "This nickname or phone is already in use!",
     WORNG_PASSWORD = "Wrong password!",
     NOT_AUTHENTICATED = "You are not authenticated, please login first",
-    BLOCKED_USER = "Your account has been banned, please contact Auction.uz support",
+    BLOCKED_USER = "Your account has been banned, please contact AutoAuction support",
     UNAUTHORIZED_ACTION = "You are not authorized to perform this action",
     FILE_NOT_FOUND = "No file was uploaded",
     ADMIN_EXIST = "Admin account already exists!",

@@ -55,15 +55,95 @@ function filterCars() {
 function updateCarStatus(select) {
     const carId     = select.id;
     const carStatus = select.value;
+
+    // Selling requires buyer details — collect them through the sale modal.
+    if (carStatus === 'SOLD') {
+        openSaleModal(select);
+        return;
+    }
+
     fetch(`/admin/car/${carId}`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ carStatus }),
     })
     .then(res => res.json())
-    .then(() => alert('Status updated'))
+    .then(() => window.location.reload())
     .catch(() => alert('Failed to update'));
 }
+
+// Record-sale modal
+let saleSourceSelect = null;
+
+function openSaleModal(select) {
+    saleSourceSelect = select;
+    const row = select.closest('.car-row');
+    const car = row && row.dataset.car ? JSON.parse(decodeURIComponent(row.dataset.car)) : {};
+    const modal = document.getElementById('sale-modal');
+    const form = document.getElementById('sale-form');
+    if (!modal || !form) return;
+
+    form.reset();
+    form.elements._id.value = car._id || select.id;
+    const titleEl = document.getElementById('sale-car-title');
+    if (titleEl) titleEl.textContent = car.carTitle || '';
+    form.elements.carVin.value = car.carVin || '';
+    form.elements.buyerName.value = car.buyerName || '';
+    if (car.salePrice != null) form.elements.salePrice.value = car.salePrice;
+    // Pre-fill the saved sale date, otherwise default to today.
+    form.elements.saleDate.value = car.saleDate
+        ? new Date(car.saleDate).toISOString().slice(0, 10)
+        : new Date().toISOString().slice(0, 10);
+
+    modal.classList.remove('hidden');
+}
+
+function closeSaleModal() {
+    const modal = document.getElementById('sale-modal');
+    if (modal) modal.classList.add('hidden');
+    // Revert the dropdown to the car's saved status since the sale was not confirmed.
+    if (saleSourceSelect) {
+        const row = saleSourceSelect.closest('.car-row');
+        const car = row && row.dataset.car ? JSON.parse(decodeURIComponent(row.dataset.car)) : null;
+        if (car && car.carStatus) saleSourceSelect.value = car.carStatus;
+    }
+    saleSourceSelect = null;
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+    const saleForm = document.getElementById('sale-form');
+    if (!saleForm) return;
+
+    saleForm.addEventListener('submit', (event) => {
+        event.preventDefault();
+        const carId = saleForm.elements._id.value;
+        const carVin = saleForm.elements.carVin.value.trim().toUpperCase();
+        const buyerName = saleForm.elements.buyerName.value.trim();
+        const salePrice = Number(saleForm.elements.salePrice.value);
+        const saleDate = saleForm.elements.saleDate.value;
+
+        if (!carVin || !buyerName || !(salePrice >= 0) || !saleDate) {
+            alert('Enter the VIN, buyer name, sale price and sale date.');
+            return;
+        }
+
+        fetch(`/admin/car/${carId}`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ carStatus: 'SOLD', carVin, buyerName, salePrice, saleDate }),
+        })
+        .then((res) => {
+            if (!res.ok) throw new Error('Update failed');
+            return res.json();
+        })
+        .then(() => {
+            saleSourceSelect = null;
+            alert('Sale recorded');
+            window.location.reload();
+        })
+        .catch(() => alert('Failed to record sale'));
+    });
+});
 
 function getCarFromButton(button) {
     const row = button.closest('.car-row');
@@ -76,7 +156,6 @@ function openEditCarModal(button) {
     const modal = document.getElementById('edit-car-modal');
     const form = document.getElementById('edit-car-form');
     const imageGrid = document.getElementById('edit-car-images');
-    const partsList = document.getElementById('edit-damaged-parts-list');
     if (!car || !modal || !form) return;
 
     form.reset();
@@ -84,6 +163,7 @@ function openEditCarModal(button) {
 
     [
         'carTitle',
+        'carVin',
         'carBrand',
         'carType',
         'carCondition',
@@ -106,7 +186,7 @@ function openEditCarModal(button) {
     imageGrid.innerHTML = '';
     (car.carImages || []).forEach((image) => {
         const img = document.createElement('img');
-        img.src = `/${image}`;
+        img.src = /^https?:\/\//.test(image) ? image : `/${image}`;
         img.alt = car.carTitle || 'car';
         img.className = 'w-full h-24 object-cover rounded border border-outline bg-black';
         imageGrid.appendChild(img);
@@ -115,8 +195,6 @@ function openEditCarModal(button) {
         imageGrid.innerHTML = '<div class="col-span-2 h-24 rounded border border-outline bg-black/40 flex items-center justify-center text-on-surface-faint text-xs font-mono uppercase">No images</div>';
     }
 
-    partsList.innerHTML = '';
-    (car.damagedParts || []).forEach((part) => addEditDamagedPart(part));
     toggleEditDamagedSection();
     modal.classList.remove('hidden');
 }
@@ -129,62 +207,8 @@ function closeEditCarModal() {
 function toggleEditDamagedSection() {
     const condition = document.getElementById('edit-car-condition');
     const section = document.getElementById('edit-damaged-section');
-    const list = document.getElementById('edit-damaged-parts-list');
-    if (!condition || !section || !list) return;
-
-    if (condition.value === 'DAMAGED') {
-        section.style.display = '';
-        if (!list.children.length) addEditDamagedPart();
-    } else {
-        section.style.display = 'none';
-        list.innerHTML = '';
-    }
-}
-
-function addEditDamagedPart(part = {}) {
-    const list = document.getElementById('edit-damaged-parts-list');
-    if (!list) return;
-
-    const row = document.createElement('div');
-    row.className = 'grid grid-cols-12 gap-2 items-center';
-    row.innerHTML = `
-        <input type="text" name="damagedPartName" placeholder="Part name"
-          class="col-span-4 bg-black/40 border border-outline rounded-lg focus:border-primary text-on-surface px-3 py-2 text-sm outline-none" />
-        <div class="col-span-2 relative">
-          <span class="absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-faint text-sm">$</span>
-          <input type="number" name="damagedPartPrice" min="0" placeholder="Price"
-            class="w-full bg-black/40 border border-outline rounded-lg focus:border-primary text-primary font-mono px-6 py-2 text-sm outline-none" />
-        </div>
-        <input type="text" name="damagedPartOem" placeholder="OEM #"
-          class="col-span-3 bg-black/40 border border-outline rounded-lg focus:border-primary text-on-surface px-3 py-2 text-sm outline-none" />
-        <div class="col-span-2 relative">
-          <span class="absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-faint text-sm">$</span>
-          <input type="number" name="damagedPartShip" min="0" placeholder="Ship"
-            class="w-full bg-black/40 border border-outline rounded-lg focus:border-primary text-on-surface font-mono px-6 py-2 text-sm outline-none" />
-        </div>
-        <button type="button" onclick="this.parentElement.remove()"
-          class="col-span-1 px-3 py-2 rounded border border-outline text-on-surface-faint hover:text-danger hover:border-danger text-xs">X</button>
-    `;
-    row.querySelector('[name="damagedPartName"]').value = part.name || '';
-    row.querySelector('[name="damagedPartPrice"]').value = part.price ?? 0;
-    row.querySelector('[name="damagedPartOem"]').value = part.oem || '';
-    row.querySelector('[name="damagedPartShip"]').value = part.ship ?? 0;
-    list.appendChild(row);
-}
-
-function collectEditDamagedParts(form) {
-    const names = Array.from(form.querySelectorAll('[name="damagedPartName"]'));
-    return names
-        .map((input) => {
-            const row = input.closest('.grid');
-            return {
-                name: input.value.trim(),
-                price: Number(row.querySelector('[name="damagedPartPrice"]').value) || 0,
-                oem: row.querySelector('[name="damagedPartOem"]').value.trim() || undefined,
-                ship: Number(row.querySelector('[name="damagedPartShip"]').value) || 0,
-            };
-        })
-        .filter((part) => part.name);
+    if (!condition || !section) return;
+    section.style.display = condition.value === 'DAMAGED' ? '' : 'none';
 }
 
 document.addEventListener('DOMContentLoaded', () => {
@@ -195,7 +219,7 @@ document.addEventListener('DOMContentLoaded', () => {
         event.preventDefault();
         const carId = editForm.elements._id.value;
         const payload = {};
-        const optionalFields = ['carColor', 'carMake', 'carModel', 'carDamage', 'carDamageDesc', 'carDesc'];
+        const optionalFields = ['carVin', 'carColor', 'carMake', 'carModel', 'carDamage', 'carDamageDesc', 'carDesc'];
 
         [
             'carStatus',
@@ -214,15 +238,6 @@ document.addEventListener('DOMContentLoaded', () => {
             if (optionalFields.includes(name) && value === '') return;
             payload[name] = ['carYear', 'carMileage', 'carPrice'].includes(name) ? Number(value) : value;
         });
-
-        payload.damagedParts = payload.carCondition === 'DAMAGED'
-            ? collectEditDamagedParts(editForm)
-            : [];
-
-        if (payload.carCondition === 'DAMAGED' && !payload.damagedParts.length) {
-            alert('Add at least one damaged part with its repair cost.');
-            return;
-        }
 
         fetch(`/admin/car/${carId}`, {
             method: 'POST',
@@ -268,56 +283,15 @@ function validateCarForm() {
         alert('Please fill in all required fields');
         return false;
     }
-    if (cond === 'DAMAGED') {
-        const names = document.querySelectorAll('[name="damagedPartName"]');
-        if (!names.length) {
-            alert('Add at least one damaged part with its repair cost.');
-            return false;
-        }
-        for (const n of names) {
-            if (!n.value.trim()) { alert('Damaged part name cannot be empty.'); return false; }
-        }
-    }
     return true;
 }
 
-// Damaged parts dynamic list
+// Show/hide the damage summary + description based on condition
 function toggleDamagedSection() {
     const cond = document.getElementById('carCondition').value;
     const section = document.getElementById('damaged-section');
-    const list = document.getElementById('damaged-parts-list');
-    if (cond === 'DAMAGED') {
-        section.style.display = '';
-        if (!list.children.length) addDamagedPart();
-    } else {
-        section.style.display = 'none';
-        list.innerHTML = '';
-    }
-}
-
-function addDamagedPart() {
-    const list = document.getElementById('damaged-parts-list');
-    const row = document.createElement('div');
-    row.className = 'grid grid-cols-12 gap-2 items-center';
-    row.innerHTML = `
-        <input type="text" name="damagedPartName" placeholder="Part name (e.g., Front bumper)"
-          class="col-span-4 bg-black/40 border border-outline rounded-lg focus:border-primary text-on-surface px-3 py-2 text-sm outline-none" />
-        <div class="col-span-2 relative">
-          <span class="absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-faint text-sm">$</span>
-          <input type="number" name="damagedPartPrice" min="0" placeholder="Price"
-            class="w-full bg-black/40 border border-outline rounded-lg focus:border-primary text-primary font-mono px-6 py-2 text-sm outline-none" />
-        </div>
-        <input type="text" name="damagedPartOem" placeholder="OEM #"
-          class="col-span-3 bg-black/40 border border-outline rounded-lg focus:border-primary text-on-surface px-3 py-2 text-sm outline-none" />
-        <div class="col-span-2 relative">
-          <span class="absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-faint text-sm">$</span>
-          <input type="number" name="damagedPartShip" min="0" placeholder="Ship"
-            class="w-full bg-black/40 border border-outline rounded-lg focus:border-primary text-on-surface font-mono px-6 py-2 text-sm outline-none" />
-        </div>
-        <button type="button" onclick="this.parentElement.remove()"
-          class="col-span-1 px-3 py-2 rounded border border-outline text-on-surface-faint hover:text-danger hover:border-danger text-xs">✕</button>
-    `;
-    list.appendChild(row);
+    if (!section) return;
+    section.style.display = cond === 'DAMAGED' ? '' : 'none';
 }
 
 document.addEventListener('DOMContentLoaded', () => {
