@@ -2,7 +2,7 @@ import express from 'express';
 const routerAdmin = express.Router();
 import adminController from "./controllers/admin.controller";
 import carController from './controllers/car.controller';
-import makeUploader from "./libs/utils/uploader";
+import makeUploader, { handleUpload } from "./libs/utils/uploader";
 
 /** Auth */
 routerAdmin.get('/', adminController.goHome);
@@ -15,7 +15,7 @@ routerAdmin
     .get('/signup', adminController.goSignup)
     .post(
         '/signup',
-        makeUploader('members').single('memberImage'),
+        handleUpload(makeUploader('members').single('memberImage')),
         adminController.processSignup
     );
 
@@ -32,7 +32,7 @@ routerAdmin.get(
 routerAdmin.post(
     '/car/create',
     adminController.verifyAdmin,
-    makeUploader('cars').array('carImages', 10),
+    handleUpload(makeUploader('cars').array('carImages', 10)),
     carController.createNewCar
 );
 
@@ -90,14 +90,14 @@ routerAdmin.get(
 routerAdmin.post(
     '/post/create',
     adminController.verifyAdmin,
-    makeUploader('posts').single('postImage'),
+    handleUpload(makeUploader('posts').single('postImage')),
     adminController.createPost
 );
 
 routerAdmin.post(
     '/post/:id',
     adminController.verifyAdmin,
-    makeUploader('posts').single('postImage'),
+    handleUpload(makeUploader('posts').single('postImage')),
     adminController.updateChosenPost
 );
 

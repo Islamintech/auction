@@ -1,4 +1,5 @@
 import path from 'path';
+import { RequestHandler } from 'express';
 import multer, { StorageEngine } from 'multer';
 import { v4 } from 'uuid';
 import fs from 'fs';
@@ -41,5 +42,24 @@ const makeUploader = (address: string) => {
         limits: { fileSize: 5 * 1024 * 1024 }, // 5MB per file
     });
 };
+
+/**
+ * Wraps an upload middleware so failures (Cloudinary signature errors,
+ * file-size limits, disallowed formats) render a friendly alert on the
+ * admin (HTML) pages instead of leaking Express's raw JSON error response.
+ */
+export const handleUpload =
+    (mw: RequestHandler): RequestHandler =>
+    (req, res, next) =>
+        mw(req, res, (err: unknown) => {
+            if (err) {
+                const message =
+                    err instanceof Error ? err.message : 'Image upload failed';
+                return res.send(
+                    `<script>alert(${JSON.stringify(message)}); history.back();</script>`
+                );
+            }
+            next();
+        });
 
 export default makeUploader;
