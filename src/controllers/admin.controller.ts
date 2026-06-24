@@ -80,7 +80,8 @@ adminController.processLogin = async (req: AdminRequest, res: Response) => {
         const result = await memberService.processLogin(input);
         req.session.member = result;
         req.session.save(function () {
-            res.redirect('/admin/car/all');
+            // pwa=1 tells the layout to offer "Add to Home Screen" right after login.
+            res.redirect('/admin/car/all?pwa=1');
         });
     } catch (err) {
         console.log('Error, processLogin:', err);

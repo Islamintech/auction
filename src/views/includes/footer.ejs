@@ -40,9 +40,14 @@
 
 <script>
 (function () {
-  var DELAY_MS = 30000;          // show after 30 seconds
+  var FALLBACK_DELAY_MS = 30000;         // generic nudge on normal navigation
+  var LOGIN_DELAY_MS = 1200;             // right after login, give the browser a beat
   var SNOOZE_MS = 7 * 24 * 3600 * 1000;  // re-ask at most weekly after dismissal
   var STORAGE_KEY = 'pwaInstallDismissedAt';
+
+  // Just logged in? The redirect carries ?pwa=1 — show the offer immediately
+  // and ignore the weekly snooze, since this is a deliberate sign-in moment.
+  var loginTrigger = new URLSearchParams(window.location.search).get('pwa') === '1';
 
   // Skip if already installed / running as an installed app.
   var standalone = window.matchMedia('(display-mode: standalone)').matches
@@ -54,11 +59,13 @@
     || window.matchMedia('(max-width: 768px)').matches;
   if (!isMobile) return;
 
-  // Respect a recent dismissal.
-  try {
-    var last = Number(localStorage.getItem(STORAGE_KEY) || 0);
-    if (last && Date.now() - last < SNOOZE_MS) return;
-  } catch (e) {}
+  // Respect a recent dismissal (unless this is a fresh login).
+  if (!loginTrigger) {
+    try {
+      var last = Number(localStorage.getItem(STORAGE_KEY) || 0);
+      if (last && Date.now() - last < SNOOZE_MS) return;
+    } catch (e) {}
+  }
 
   // Register the service worker (required for the Android install prompt).
   if ('serviceWorker' in navigator) {
@@ -66,11 +73,15 @@
   }
 
   var deferredPrompt = null;
+  var shown = false;
+  var timerElapsed = false;
   var isIOS = /iPhone|iPad|iPod/i.test(navigator.userAgent) && !window.MSStream;
 
   window.addEventListener('beforeinstallprompt', function (e) {
     e.preventDefault();          // stop Chrome's mini-infobar; we show our own
     deferredPrompt = e;
+    // If our timer already fired but the event hadn't arrived yet, show now.
+    if (timerElapsed) attemptShow();
   });
 
   function dismiss() {
@@ -79,15 +90,15 @@
     try { localStorage.setItem(STORAGE_KEY, String(Date.now())); } catch (e) {}
   }
 
-  function showBanner() {
-    if (standalone) return;
+  function attemptShow() {
+    if (shown || standalone) return;
     var banner = document.getElementById('pwa-install-banner');
     var installBtn = document.getElementById('pwa-install-btn');
     var text = document.getElementById('pwa-install-text');
     if (!banner) return;
 
     if (deferredPrompt) {
-      // Android / Chrome: real install flow.
+      // Android / Chrome: real install flow — clicking "Add" installs it.
       installBtn.onclick = function () {
         deferredPrompt.prompt();
         deferredPrompt.userChoice.finally(function () {
@@ -101,17 +112,21 @@
       installBtn.textContent = 'Got it';
       installBtn.onclick = dismiss;
     } else {
-      // No install support and not iOS — nothing useful to offer.
+      // No install support yet and not iOS — wait for beforeinstallprompt.
       return;
     }
 
     banner.style.display = 'block';
+    shown = true;
   }
 
   document.getElementById('pwa-dismiss').addEventListener('click', dismiss);
   window.addEventListener('appinstalled', dismiss);
 
-  setTimeout(showBanner, DELAY_MS);
+  setTimeout(function () {
+    timerElapsed = true;
+    attemptShow();
+  }, loginTrigger ? LOGIN_DELAY_MS : FALLBACK_DELAY_MS);
 })();
 </script>
 </body>
