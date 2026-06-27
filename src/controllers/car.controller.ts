@@ -84,17 +84,16 @@ carController.verifyCarByVin = async (req: Request, res: Response) => {
         }
 
         const sold = car.carStatus === CarStatus.SOLD;
+        const clientCar = toClientCar(car);
+
         res.status(HttpCode.OK).json({
+            ...clientCar,
             found: true,
             sold,
-            vin: car.carVin,
-            title: car.carTitle,
-            brand: car.carBrand,
-            year: car.carYear,
             buyerName: sold ? car.buyerName : null,
             salePrice: sold ? car.salePrice : null,
             saleDate: sold ? car.saleDate : null,
-            images: Array.isArray(car.carImages) ? car.carImages : [],
+            soldAt: sold ? car.saleDate : null,
         });
     } catch (err) {
         console.log('Error, verifyCarByVin:', err);

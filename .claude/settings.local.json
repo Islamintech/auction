@@ -39,7 +39,17 @@
       "Bash(nslookup -type=TXT cluster0.aiseke1.mongodb.net 8.8.8.8)",
       "PowerShell(Get-NetAdapter | Where-Object {$_.Status -eq 'Up'} | Select-Object Name, InterfaceDescription, Status | Format-Table -AutoSize)",
       "Bash(git check-ignore *)",
-      "Bash(git add *)"
+      "Bash(git add *)",
+      "Bash(git commit -m ' *)",
+      "Bash(git checkout *)",
+      "Bash(git push *)",
+      "Bash(git merge *)",
+      "Bash(git ls-remote *)",
+      "Bash(git symbolic-ref *)",
+      "Bash(git branch *)",
+      "Bash(python -c \"from PIL import Image; im=Image.open\\('logo.png'\\).convert\\('RGBA'\\); im.resize\\(\\(512,512\\)\\).save\\('icon-512.png'\\); im.resize\\(\\(192,192\\)\\).save\\('icon-192.png'\\); im.resize\\(\\(180,180\\)\\).save\\('apple-touch-icon.png'\\); print\\('done'\\)\")",
+      "Bash(npm run *)",
+      "Bash(git rm *)"
     ]
   }
 }
