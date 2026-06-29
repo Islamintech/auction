@@ -31,6 +31,7 @@ export const toClientCar = (car: any) => {
         year: c.carYear,
         km: c.carMileage,
         price: c.carPrice,
+        priceCurrency: 'KRW',
         color: c.carColor,
         desc: c.carDesc,
         image: images[0] || null,

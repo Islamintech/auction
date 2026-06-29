@@ -39,7 +39,73 @@ document.addEventListener('DOMContentLoaded', () => {
             document.querySelector('details').removeAttribute('open');
         });
     }
+
+    initUsdEstimates();
 });
+
+let usdKrwRate = null;
+
+function initUsdEstimates() {
+    const inputs = document.querySelectorAll('[data-usd-estimate-source]');
+    if (!inputs.length) return;
+
+    inputs.forEach((input) => {
+        input.addEventListener('input', () => updateUsdEstimate(input));
+        updateUsdEstimate(input);
+    });
+
+    fetch('/admin/currency/usd-krw')
+        .then((res) => {
+            if (!res.ok) throw new Error('Rate request failed');
+            return res.json();
+        })
+        .then((data) => {
+            usdKrwRate = Number(data.rate);
+            inputs.forEach((input) => updateUsdEstimate(input));
+        })
+        .catch(() => {
+            document.querySelectorAll('[data-usd-estimate]').forEach((target) => {
+                target.textContent = 'Estimated USD: exchange rate unavailable';
+            });
+        });
+}
+
+function updateUsdEstimate(input) {
+    const estimate = input.parentElement?.querySelector('[data-usd-estimate]');
+    if (!estimate) return;
+
+    if (!usdKrwRate) {
+        estimate.textContent = 'Estimated USD: loading exchange rate...';
+        return;
+    }
+
+    const amounts = parseKrwAmounts(input.value);
+    if (!amounts.length) {
+        estimate.textContent = 'Estimated USD: enter a KRW price';
+        return;
+    }
+
+    const converted = amounts.map((amount) => amount / usdKrwRate);
+    estimate.textContent = `Estimated USD: ${formatUsdEstimate(converted)}`;
+}
+
+function parseKrwAmounts(value) {
+    return (value.match(/\d[\d,]*/g) || [])
+        .map((part) => Number(part.replace(/,/g, '')))
+        .filter((amount) => Number.isFinite(amount) && amount > 0)
+        .slice(0, 2);
+}
+
+function formatUsdEstimate(amounts) {
+    const formatter = new Intl.NumberFormat('en-US', {
+        style: 'currency',
+        currency: 'USD',
+        maximumFractionDigits: 0,
+    });
+
+    if (amounts.length === 1) return formatter.format(amounts[0]);
+    return `${formatter.format(amounts[0])} ~ ${formatter.format(amounts[1])}`;
+}
 
 // Search filter
 function filterCars() {
@@ -180,6 +246,8 @@ function openEditCarModal(button) {
     ].forEach((name) => {
         if (form.elements[name]) form.elements[name].value = car[name] ?? '';
     });
+
+    if (form.elements.carPrice) updateUsdEstimate(form.elements.carPrice);
 
     imageGrid.innerHTML = '';
     (car.carImages || []).forEach((image) => {

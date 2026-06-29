@@ -188,10 +188,11 @@
               </div>
 
               <div>
-                <label class="block text-[10px] uppercase tracking-widest font-mono font-bold text-primary mb-2">Valuation ($) *</label>
-                <input name="carPrice" type="text" required
+                <label class="block text-[10px] uppercase tracking-widest font-mono font-bold text-primary mb-2">Valuation (KRW) *</label>
+                <input name="carPrice" type="text" required data-usd-estimate-source
                   class="w-full bg-black/40 border border-outline rounded-lg focus:border-primary text-primary font-bold px-4 py-3 text-sm font-mono outline-none"
-                  placeholder="e.g. 15,000 or 16,500~18,500" />
+                  placeholder="e.g. 18,000,000 or 18,000,000~22,000,000" />
+                <p data-usd-estimate class="text-[9px] text-on-surface-faint font-mono italic mt-1">Estimated USD: enter a KRW price</p>
               </div>
 
               <div>
@@ -358,7 +359,7 @@
                 </div>
               </td>
               <td data-label="Price" class="px-4 py-5">
-                <div class="font-mono font-bold text-primary text-base">$<%= car.carPrice %></div>
+                <div class="font-mono font-bold text-primary text-base">₩<%= car.carPrice %></div>
               </td>
               <td data-label="Stats" class="px-4 py-5">
                 <div class="text-xs text-on-surface-faint font-mono">
@@ -449,7 +450,7 @@
                 <%= car.saleDate ? new Date(car.saleDate).toISOString().slice(0,10) : '—' %>
               </td>
               <td data-label="Sale Price" class="px-8 py-5 text-right font-mono font-bold text-success text-base">
-                <%= car.salePrice != null ? '$' + car.salePrice.toLocaleString() : '—' %>
+                <%= car.salePrice != null ? '₩' + car.salePrice.toLocaleString() : '—' %>
               </td>
             </tr>
             <% }) %>
@@ -540,8 +541,9 @@
         </div>
 
         <div>
-          <label class="block text-[10px] uppercase tracking-widest font-mono font-bold text-primary mb-2">Valuation ($) *</label>
-          <input name="carPrice" type="text" required class="w-full bg-black/40 border border-outline rounded-lg focus:border-primary text-primary font-bold px-4 py-3 text-sm font-mono outline-none" placeholder="e.g. 15,000 or 16,500~18,500" />
+          <label class="block text-[10px] uppercase tracking-widest font-mono font-bold text-primary mb-2">Valuation (KRW) *</label>
+          <input name="carPrice" type="text" required data-usd-estimate-source class="w-full bg-black/40 border border-outline rounded-lg focus:border-primary text-primary font-bold px-4 py-3 text-sm font-mono outline-none" placeholder="e.g. 18,000,000 or 18,000,000~22,000,000" />
+          <p data-usd-estimate class="text-[9px] text-on-surface-faint font-mono italic mt-1">Estimated USD: enter a KRW price</p>
         </div>
 
         <div>
@@ -635,10 +637,10 @@
       </div>
 
       <div>
-        <label class="block text-[10px] uppercase tracking-widest font-mono font-bold text-primary mb-2">Sale Price ($) *</label>
+        <label class="block text-[10px] uppercase tracking-widest font-mono font-bold text-primary mb-2">Sale Price (KRW) *</label>
         <input name="salePrice" type="number" min="0" required
           class="w-full bg-black/40 border border-outline rounded-lg focus:border-primary text-primary font-bold px-4 py-3 text-sm font-mono outline-none"
-          placeholder="15000" />
+          placeholder="18000000" />
       </div>
 
       <div>

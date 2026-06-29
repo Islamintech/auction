@@ -6,8 +6,10 @@ import { AdminRequest, ExtendedRequest } from '../libs/types/member';
 import { CarInput, CarInquiry, CarUpdateInput } from '../libs/types/car';
 import { CarBrand, CarColor, CarCondition, CarFuel, CarStatus, CarTransmission, CarType } from '../libs/enums/car.enum';
 import { toClientCar, toClientCars } from '../libs/utils/carTransformer';
+import CurrencyService from '../models/currency.service';
 
 const carService = new CarService();
+const currencyService = new CurrencyService();
 const carController: T = {};
 
 /** SPA **/
@@ -138,6 +140,24 @@ carController.getAllCars = async (req: Request, res: Response) => {
         console.log('Error, getAllCars:', err);
         if (err instanceof Errors) res.status(err.code).json(err);
         else res.status(Errors.standart.code).json(Errors.standart.message);
+    }
+};
+
+carController.getUsdKrwRate = async (req: Request, res: Response) => {
+    try {
+        const result = await currencyService.getUsdKrwRate();
+        res.status(HttpCode.OK).json({
+            base: 'USD',
+            quote: 'KRW',
+            rate: result.rate,
+            date: result.date,
+            fetchedAt: result.fetchedAt,
+        });
+    } catch (err) {
+        console.log('Error, getUsdKrwRate:', err);
+        res.status(HttpCode.SERVICE_UNAVAILABLE).json({
+            message: 'Exchange rate is temporarily unavailable',
+        });
     }
 };
 

@@ -29,6 +29,12 @@ routerAdmin.get(
     carController.getAllCars
 );
 
+routerAdmin.get(
+    '/currency/usd-krw',
+    adminController.verifyAdmin,
+    carController.getUsdKrwRate
+);
+
 routerAdmin.post(
     '/car/create',
     adminController.verifyAdmin,
