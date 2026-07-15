@@ -28,6 +28,7 @@ router.get('/member/top-users', memberController.getTopUsers);
 router.get('/vin', carController.vinLookup);
 
 /** Cars */
+router.get('/currency/usd-krw', carController.getUsdKrwRate);
 router.get('/car/all', carController.getCars);
 router.get('/car/verify/:vin', carController.verifyCarByVin);
 router.get(
