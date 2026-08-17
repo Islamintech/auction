@@ -32,7 +32,8 @@ const postSchema = new Schema(
         postStatus: {
             type: String,
             enum: PostStatus,
-            default: PostStatus.ACTIVE,
+            // Unpublished by default — publishing is an explicit admin decision.
+            default: PostStatus.DRAFT,
         },
 
         postViewCount: {

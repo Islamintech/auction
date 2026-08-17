@@ -136,8 +136,8 @@ adminController.getMembers = async (req: Request, res: Response) => {
         res.render('members', { members: result });
     } catch (err) {
         console.log('Error, getMembers:', err);
-        if (err instanceof Errors) res.status(err.code).json(err);
-        else res.status(Errors.standart.code).json(Errors.standart.message);
+        if (err instanceof Errors) res.status(err.code).json({ message: err.message });
+        else res.status(Errors.standart.code).json({ message: Errors.standart.message });
     }
 };
 
@@ -148,8 +148,8 @@ adminController.updateChosenMember = async (req: Request, res: Response) => {
         res.status(HttpCode.OK).json({ data: result });
     } catch (err) {
         console.log('Error, updateChosenMember:', err);
-        if (err instanceof Errors) res.status(err.code).json(err);
-        else res.status(Errors.standart.code).json(Errors.standart.message);
+        if (err instanceof Errors) res.status(err.code).json({ message: err.message });
+        else res.status(Errors.standart.code).json({ message: Errors.standart.message });
     }
 };
 
@@ -181,8 +181,8 @@ adminController.getConsultations = async (req: Request, res: Response) => {
           res.status(HttpCode.OK).json({ data: result });
       } catch (err) {
           console.log('Error, updateChosenConsultation:', err);
-          if (err instanceof Errors) res.status(err.code).json(err);
-          else res.status(Errors.standart.code).json(Errors.standart.message);
+          if (err instanceof Errors) res.status(err.code).json({ message: err.message });
+          else res.status(Errors.standart.code).json({ message: Errors.standart.message });
       }
   };
 
@@ -194,8 +194,8 @@ adminController.getConsultations = async (req: Request, res: Response) => {
           res.status(HttpCode.OK).json({ data: result });
       } catch (err) {
           console.log('Error, deleteChosenConsultation:', err);
-          if (err instanceof Errors) res.status(err.code).json(err);
-          else res.status(Errors.standart.code).json(Errors.standart.message);
+          if (err instanceof Errors) res.status(err.code).json({ message: err.message });
+          else res.status(Errors.standart.code).json({ message: Errors.standart.message });
       }
   };
 
@@ -214,8 +214,9 @@ adminController.createPost = async (req: AdminRequest, res: Response) => {
         }
 
         await postService.createPost(req.member._id, input);
+        // New posts start as DRAFT — say so, rather than claiming it is live.
         res.send(
-            `<script>alert("Post published successfully"); window.location.replace('/admin/post/all')</script>`
+            `<script>alert("Post saved as a draft. Use Publish to make it public."); window.location.replace('/admin/post/all')</script>`
         );
     } catch (err) {
         console.log('Error, createPost:', err);
@@ -233,8 +234,8 @@ adminController.getPosts = async (req: Request, res: Response) => {
         res.render('posts', { posts: result });
     } catch (err) {
         console.log('Error, getPosts:', err);
-        if (err instanceof Errors) res.status(err.code).json(err);
-        else res.status(Errors.standart.code).json(Errors.standart.message);
+        if (err instanceof Errors) res.status(err.code).json({ message: err.message });
+        else res.status(Errors.standart.code).json({ message: Errors.standart.message });
     }
 };
 
@@ -254,8 +255,8 @@ adminController.updateChosenPost = async (req: AdminRequest, res: Response) => {
         res.status(HttpCode.OK).json({ data: result });
     } catch (err) {
         console.log('Error, updateChosenPost:', err);
-        if (err instanceof Errors) res.status(err.code).json(err);
-        else res.status(Errors.standart.code).json(Errors.standart.message);
+        if (err instanceof Errors) res.status(err.code).json({ message: err.message });
+        else res.status(Errors.standart.code).json({ message: Errors.standart.message });
     }
 };
 
@@ -267,8 +268,8 @@ adminController.deleteChosenPost = async (req: Request, res: Response) => {
         res.status(HttpCode.OK).json({ data: result });
     } catch (err) {
         console.log('Error, deleteChosenPost:', err);
-        if (err instanceof Errors) res.status(err.code).json(err);
-        else res.status(Errors.standart.code).json(Errors.standart.message);
+        if (err instanceof Errors) res.status(err.code).json({ message: err.message });
+        else res.status(Errors.standart.code).json({ message: Errors.standart.message });
     }
 };
 

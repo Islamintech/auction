@@ -47,7 +47,7 @@
 
     .responsive-table td::before {
       content: attr(data-label);
-      font-family: 'JetBrains Mono', ui-monospace, monospace;
+      font-family: var(--mono-font);
       font-size: 10px;
       text-transform: uppercase;
       letter-spacing: 0.08em;
@@ -207,6 +207,7 @@
               <th class="px-8 py-4 text-[11px] uppercase tracking-[0.08em] font-mono font-bold text-on-surface-faint">#</th>
               <th class="px-4 py-4 text-[11px] uppercase tracking-[0.08em] font-mono font-bold text-on-surface-faint">Title</th>
               <th class="px-4 py-4 text-[11px] uppercase tracking-[0.08em] font-mono font-bold text-on-surface-faint">Type</th>
+              <th class="px-4 py-4 text-[11px] uppercase tracking-[0.08em] font-mono font-bold text-on-surface-faint">Visibility</th>
               <th class="px-4 py-4 text-[11px] uppercase tracking-[0.08em] font-mono font-bold text-on-surface-faint">Views</th>
               <th class="px-4 py-4 text-[11px] uppercase tracking-[0.08em] font-mono font-bold text-on-surface-faint">Engagement</th>
               <th class="px-4 py-4 text-[11px] uppercase tracking-[0.08em] font-mono font-bold text-on-surface-faint">Date</th>
@@ -238,6 +239,25 @@
                   <%= p.postType %>
                 </span>
               </td>
+              <td data-label="Visibility" class="px-4 py-5">
+                <% if (p.postStatus === 'ACTIVE') { %>
+                  <button onclick="setPostVisibility('<%= p._id %>', 'DRAFT')"
+                    class="px-3 py-1.5 rounded-full text-[9px] font-bold tracking-wider bg-success/15 text-success border border-success/30 hover:bg-danger/15 hover:text-danger hover:border-danger/30 transition-colors"
+                    title="Published — click to unpublish">
+                    ● PUBLIC
+                  </button>
+                <% } else if (p.postStatus === 'DELETE') { %>
+                  <span class="px-3 py-1.5 rounded-full text-[9px] font-bold tracking-wider bg-danger/15 text-danger border border-danger/30">
+                    DELETED
+                  </span>
+                <% } else { %>
+                  <button onclick="setPostVisibility('<%= p._id %>', 'ACTIVE')"
+                    class="px-3 py-1.5 rounded-full text-[9px] font-bold tracking-wider bg-white/5 text-on-surface-faint border border-outline hover:bg-success/15 hover:text-success hover:border-success/30 transition-colors"
+                    title="Draft — click to publish">
+                    ○ DRAFT
+                  </button>
+                <% } %>
+              </td>
               <td data-label="Views" class="px-4 py-5 font-mono text-sm text-on-surface-secondary">
                 <%= p.postViewCount?.toLocaleString() || 0 %>
               </td>
@@ -264,7 +284,7 @@
             <% }) %>
             <% if(posts.length === 0) { %>
             <tr>
-              <td colspan="7" class="px-8 py-16 text-center text-on-surface-faint font-mono text-xs uppercase tracking-widest">
+              <td colspan="8" class="px-8 py-16 text-center text-on-surface-faint font-mono text-xs uppercase tracking-widest">
                 No posts yet. Create your first post above.
               </td>
             </tr>
@@ -315,7 +335,8 @@
           <select name="postStatus" id="edit-post-status"
             class="w-full bg-black/40 border border-outline rounded-lg focus:border-primary text-on-surface px-4 py-3 text-sm outline-none"
             style="appearance:none">
-            <option value="ACTIVE">Active</option>
+            <option value="DRAFT">Draft — hidden from the public site</option>
+            <option value="ACTIVE">Published — visible to everyone</option>
             <option value="DELETE">Deleted</option>
           </select>
         </div>
@@ -390,7 +411,7 @@ function openEditPost(post) {
     document.getElementById('edit-post-title').value  = post.postTitle  || '';
     document.getElementById('edit-post-body').value   = post.postBody   || '';
     document.getElementById('edit-post-type').value   = post.postType   || 'NEWS';
-    document.getElementById('edit-post-status').value = post.postStatus || 'ACTIVE';
+    document.getElementById('edit-post-status').value = post.postStatus || 'DRAFT';
     const modal = document.getElementById('edit-post-modal');
     modal.classList.remove('hidden');
     modal.classList.add('flex');
@@ -418,11 +439,39 @@ document.getElementById('edit-post-form').addEventListener('submit', function (e
         .catch(() => alert('Failed to update post'));
 });
 
+// One-click publish / unpublish from the Visibility column. The update route
+// runs through multer (the edit form posts multipart), so send FormData rather
+// than JSON — a JSON body would arrive empty.
+function setPostVisibility(id, status) {
+    if (status === 'DRAFT' && !confirm('Unpublish this post? It will disappear from the public site.')) return;
+
+    const fd = new FormData();
+    fd.append('postStatus', status);
+
+    fetch(`/admin/post/${id}`, { method: 'POST', body: fd })
+        .then(async (r) => {
+            if (!r.ok) {
+                let msg = 'Failed to change visibility';
+                try { const b = await r.json(); if (b && b.message) msg = b.message; } catch (e) {}
+                throw new Error(msg);
+            }
+            window.location.reload();
+        })
+        .catch((err) => alert(err.message || 'Failed to change visibility'));
+}
+
 function deletePost(id) {
     if (!confirm('Delete this post?')) return;
     fetch(`/admin/post/${id}/delete`, { method: 'POST' })
-        .then(() => window.location.reload())
-        .catch(() => alert('Failed to delete'));
+        .then(async (r) => {
+            if (!r.ok) {
+                let msg = 'Failed to delete';
+                try { const b = await r.json(); if (b && b.message) msg = b.message; } catch (e) {}
+                throw new Error(msg);
+            }
+            window.location.reload();
+        })
+        .catch((err) => alert(err.message || 'Failed to delete'));
 }
 </script>
 
