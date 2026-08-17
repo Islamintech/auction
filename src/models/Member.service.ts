@@ -69,16 +69,23 @@ class MemberService {
         const result = await this.memberModel
             .findByIdAndUpdate({ _id: memberId }, cleaned, { new: true })
             .exec();
-        if (!result) throw new Errors(HttpCode.NOT_MODIFIED, Message.UPDATED_FAILED);
+        if (!result) throw new Errors(HttpCode.NOT_FOUND, Message.UPDATED_FAILED);
         return result;
     }
 
+    /**
+     * No longer exposed over HTTP — the public leaderboard that used it was
+     * removed. Kept for internal/admin use, but now projected down to display
+     * fields only: it previously returned full member documents (phone, email),
+     * so anything re-exposing it stays safe by default.
+     */
     public async getTopUsers(): Promise<Member[]> {
         const result = await this.memberModel
             .find({
                 memberStatus: MemberStatus.ACTIVE,
                 memberPoints: { $gte: 1 },
             })
+            .select('memberNick memberImage memberPoints')
             .sort({ memberPoints: 'desc' })  // desc — highest points first
             .limit(5)                          // top 5 for leaderboard
             .exec();
@@ -154,7 +161,7 @@ class MemberService {
                 { new: true, runValidators: true }
             )
             .exec();
-        if (!result) throw new Errors(HttpCode.NOT_MODIFIED, Message.UPDATED_FAILED);
+        if (!result) throw new Errors(HttpCode.NOT_FOUND, Message.UPDATED_FAILED);
         return result;
     }
 

@@ -22,7 +22,9 @@ router.post(
     uploader('members').single('memberImage'),
     memberController.updateMember
 );
-router.get('/member/top-users', memberController.getTopUsers);
+// The public /member/top-users route was removed along with the homepage
+// leaderboard: it was unauthenticated and returned whole member documents,
+// including memberPhone and memberEmail.
 
 /** Public VIN lookup (SSR page) */
 router.get('/vin', carController.vinLookup);
@@ -89,6 +91,7 @@ router.get(
     memberController.verifyAuth,
     pointsController.getPointsHistory
 );
-router.get('/points/leaderboard', pointsController.getLeaderboard);
+// /points/leaderboard removed too — it served the same top-member list under a
+// second path, and no client consumed it.
 
 export default router;
