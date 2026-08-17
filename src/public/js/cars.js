@@ -133,24 +133,51 @@ function updateCarStatus(select) {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ carStatus }),
     })
-    .then(res => res.json())
+    .then(async (res) => {
+        if (!res.ok) throw new Error(await readError(res, 'Failed to update'));
+        return res.json();
+    })
     .then(() => window.location.reload())
-    .catch(() => alert('Failed to update'));
+    .catch((err) => alert(err.message || 'Failed to update'));
+}
+
+// Reads the JSON snapshot the table row carries. Both the inventory table and
+// the sold-cars table expose it, so any control inside a row can find its car.
+function getRowCar(el) {
+    const row = el.closest('[data-car]');
+    if (!row || !row.dataset.car) return null;
+    return JSON.parse(decodeURIComponent(row.dataset.car));
+}
+
+// Pulls the server's `{ message }` out of a failed response so the admin sees
+// the real reason instead of a generic alert.
+async function readError(res, fallback) {
+    try {
+        const body = await res.json();
+        if (body && body.message) return body.message;
+    } catch (e) { /* empty or non-JSON body */ }
+    return fallback;
 }
 
 // Record-sale modal
 let saleSourceSelect = null;
 
+// Entry point for an already-sold car: the status dropdown fires no change event
+// when "Sold" is re-picked, so the sale record needs its own button.
+function openSaleModalFromRow(button) {
+    openSaleModal(button);
+}
+
 function openSaleModal(select) {
-    saleSourceSelect = select;
-    const row = select.closest('.car-row');
-    const car = row && row.dataset.car ? JSON.parse(decodeURIComponent(row.dataset.car)) : {};
+    // Only a <select> needs reverting on cancel; a button does not.
+    saleSourceSelect = select.tagName === 'SELECT' ? select : null;
+    const car = getRowCar(select) || {};
     const modal = document.getElementById('sale-modal');
     const form = document.getElementById('sale-form');
     if (!modal || !form) return;
 
     form.reset();
-    form.elements._id.value = car._id || select.id;
+    form.elements._id.value = car._id || select.id || '';
     const titleEl = document.getElementById('sale-car-title');
     if (titleEl) titleEl.textContent = car.carTitle || '';
     form.elements.carVin.value = car.carVin || '';
@@ -169,8 +196,7 @@ function closeSaleModal() {
     if (modal) modal.classList.add('hidden');
     // Revert the dropdown to the car's saved status since the sale was not confirmed.
     if (saleSourceSelect) {
-        const row = saleSourceSelect.closest('.car-row');
-        const car = row && row.dataset.car ? JSON.parse(decodeURIComponent(row.dataset.car)) : null;
+        const car = getRowCar(saleSourceSelect);
         if (car && car.carStatus) saleSourceSelect.value = car.carStatus;
     }
     saleSourceSelect = null;
@@ -198,8 +224,8 @@ document.addEventListener('DOMContentLoaded', () => {
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ carStatus: 'SOLD', carVin, buyerName, salePrice, saleDate }),
         })
-        .then((res) => {
-            if (!res.ok) throw new Error('Update failed');
+        .then(async (res) => {
+            if (!res.ok) throw new Error(await readError(res, 'Failed to record sale'));
             return res.json();
         })
         .then(() => {
@@ -207,18 +233,19 @@ document.addEventListener('DOMContentLoaded', () => {
             alert('Sale recorded');
             window.location.reload();
         })
-        .catch(() => alert('Failed to record sale'));
+        .catch((err) => alert(err.message || 'Failed to record sale'));
     });
 });
 
-function getCarFromButton(button) {
-    const row = button.closest('.car-row');
-    if (!row || !row.dataset.car) return null;
-    return JSON.parse(decodeURIComponent(row.dataset.car));
+// Sale details only apply to a sold car — show/hide them with the status select.
+function toggleEditSaleFields(form) {
+    const wrap = document.getElementById('edit-sale-fields');
+    if (!wrap || !form.elements.carStatus) return;
+    wrap.classList.toggle('hidden', form.elements.carStatus.value !== 'SOLD');
 }
 
 function openEditCarModal(button) {
-    const car = getCarFromButton(button);
+    const car = getRowCar(button);
     const modal = document.getElementById('edit-car-modal');
     const form = document.getElementById('edit-car-form');
     const imageGrid = document.getElementById('edit-car-images');
@@ -243,9 +270,20 @@ function openEditCarModal(button) {
         'carFuel',
         'carTransmission',
         'carDesc',
+        'buyerName',
     ].forEach((name) => {
         if (form.elements[name]) form.elements[name].value = car[name] ?? '';
     });
+
+    // salePrice is a number and saleDate an ISO timestamp — neither survives the
+    // plain assignment above (a `date` input only accepts YYYY-MM-DD).
+    if (form.elements.salePrice)
+        form.elements.salePrice.value = car.salePrice != null ? car.salePrice : '';
+    if (form.elements.saleDate)
+        form.elements.saleDate.value = car.saleDate
+            ? new Date(car.saleDate).toISOString().slice(0, 10)
+            : '';
+    toggleEditSaleFields(form);
 
     if (form.elements.carPrice) updateUsdEstimate(form.elements.carPrice);
 
@@ -273,6 +311,13 @@ document.addEventListener('DOMContentLoaded', () => {
     const editForm = document.getElementById('edit-car-form');
     if (!editForm) return;
 
+    // Keep the sale block in sync while the admin changes status in the modal.
+    if (editForm.elements.carStatus) {
+        editForm.elements.carStatus.addEventListener('change', () =>
+            toggleEditSaleFields(editForm)
+        );
+    }
+
     editForm.addEventListener('submit', (event) => {
         event.preventDefault();
         const carId = editForm.elements._id.value;
@@ -297,20 +342,36 @@ document.addEventListener('DOMContentLoaded', () => {
             payload[name] = name === 'carMileage' ? Number(value) : value;
         });
 
+        // Sale details ride along only while the car stays Sold; switching to any
+        // other status makes the server clear them, so sending them would conflict.
+        if (payload.carStatus === 'SOLD') {
+            const buyerName = editForm.elements.buyerName?.value.trim() ?? '';
+            const salePrice = editForm.elements.salePrice?.value ?? '';
+            const saleDate = editForm.elements.saleDate?.value ?? '';
+
+            if (!buyerName || salePrice === '' || !saleDate) {
+                alert('A sold car needs a buyer name, sale price and sale date.');
+                return;
+            }
+            payload.buyerName = buyerName;
+            payload.salePrice = Number(salePrice);
+            payload.saleDate = saleDate;
+        }
+
         fetch(`/admin/car/${carId}`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(payload),
         })
-        .then((res) => {
-            if (!res.ok) throw new Error('Update failed');
+        .then(async (res) => {
+            if (!res.ok) throw new Error(await readError(res, 'Failed to update car information'));
             return res.json();
         })
         .then(() => {
             alert('Car information updated');
             window.location.reload();
         })
-        .catch(() => alert('Failed to update car information'));
+        .catch((err) => alert(err.message || 'Failed to update car information'));
     });
 });
 
@@ -318,15 +379,12 @@ document.addEventListener('DOMContentLoaded', () => {
 function deleteCar(id) {
     if (!confirm('Delete this car permanently?')) return;
     fetch(`/admin/car/${id}/delete`, { method: 'POST' })
-        .then(res => res.json())
-        .then(data => {
-            if (data.data) {
-                window.location.reload();
-            } else {
-                alert('Failed to delete');
-            }
+        .then(async (res) => {
+            if (!res.ok) throw new Error(await readError(res, 'Failed to delete'));
+            return res.json();
         })
-        .catch(() => alert('Failed to delete'));
+        .then(() => window.location.reload())
+        .catch((err) => alert(err.message || 'Failed to delete'));
 }
 
 // Validate form

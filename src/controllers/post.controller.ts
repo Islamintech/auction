@@ -30,8 +30,8 @@ postController.getPosts = async (req: Request, res: Response) => {
         res.status(HttpCode.OK).json(result);
     } catch (err) {
         console.log('Error, getPosts:', err);
-        if (err instanceof Errors) res.status(err.code).json(err);
-        else res.status(Errors.standart.code).json(Errors.standart.message);
+        if (err instanceof Errors) res.status(err.code).json({ message: err.message });
+        else res.status(Errors.standart.code).json({ message: Errors.standart.message });
     }
 };
 
@@ -50,8 +50,8 @@ postController.getPost = async (req: ExtendedRequest, res: Response) => {
         res.status(HttpCode.OK).json(payload);
     } catch (err) {
         console.log('Error, getPost:', err);
-        if (err instanceof Errors) res.status(err.code).json(err);
-        else res.status(Errors.standart.code).json(Errors.standart.message);
+        if (err instanceof Errors) res.status(err.code).json({ message: err.message });
+        else res.status(Errors.standart.code).json({ message: Errors.standart.message });
     }
 };
 
@@ -63,8 +63,8 @@ postController.createPost = async (req: ExtendedRequest, res: Response) => {
         res.status(HttpCode.CREATED).json(result);
     } catch (err) {
         console.log('Error, createPost:', err);
-        if (err instanceof Errors) res.status(err.code).json(err);
-        else res.status(Errors.standart.code).json(Errors.standart.message);
+        if (err instanceof Errors) res.status(err.code).json({ message: err.message });
+        else res.status(Errors.standart.code).json({ message: Errors.standart.message });
     }
 };
 
@@ -76,8 +76,8 @@ postController.likePost = async (req: ExtendedRequest, res: Response) => {
         res.status(HttpCode.OK).json(result);
     } catch (err) {
         console.log('Error, likePost:', err);
-        if (err instanceof Errors) res.status(err.code).json(err);
-        else res.status(Errors.standart.code).json(Errors.standart.message);
+        if (err instanceof Errors) res.status(err.code).json({ message: err.message });
+        else res.status(Errors.standart.code).json({ message: Errors.standart.message });
     }
 };
 
@@ -89,8 +89,8 @@ postController.commentPost = async (req: ExtendedRequest, res: Response) => {
         res.status(HttpCode.OK).json(result);
     } catch (err) {
         console.log('Error, commentPost:', err);
-        if (err instanceof Errors) res.status(err.code).json(err);
-        else res.status(Errors.standart.code).json(Errors.standart.message);
+        if (err instanceof Errors) res.status(err.code).json({ message: err.message });
+        else res.status(Errors.standart.code).json({ message: Errors.standart.message });
     }
 };
 

@@ -31,8 +31,8 @@ carController.getCars = async (req: Request, res: Response) => {
         res.status(HttpCode.OK).json(toClientCars(result));
     } catch (err) {
         console.log('Error, getCars:', err);
-        if (err instanceof Errors) res.status(err.code).json(err);
-        else res.status(Errors.standart.code).json(Errors.standart.message);
+        if (err instanceof Errors) res.status(err.code).json({ message: err.message });
+        else res.status(Errors.standart.code).json({ message: Errors.standart.message });
     }
 };
 
@@ -45,8 +45,8 @@ carController.getCar = async (req: ExtendedRequest, res: Response) => {
         res.status(HttpCode.OK).json(toClientCar(result));
     } catch (err) {
         console.log('Error, getCar:', err);
-        if (err instanceof Errors) res.status(err.code).json(err);
-        else res.status(Errors.standart.code).json(Errors.standart.message);
+        if (err instanceof Errors) res.status(err.code).json({ message: err.message });
+        else res.status(Errors.standart.code).json({ message: Errors.standart.message });
     }
 };
 
@@ -58,8 +58,8 @@ carController.likeCar = async (req: ExtendedRequest, res: Response) => {
         res.status(HttpCode.OK).json(toClientCar(result));
     } catch (err) {
         console.log('Error, likeCar:', err);
-        if (err instanceof Errors) res.status(err.code).json(err);
-        else res.status(Errors.standart.code).json(Errors.standart.message);
+        if (err instanceof Errors) res.status(err.code).json({ message: err.message });
+        else res.status(Errors.standart.code).json({ message: Errors.standart.message });
     }
 };
 
@@ -71,8 +71,8 @@ carController.commentCar = async (req: ExtendedRequest, res: Response) => {
         res.status(HttpCode.OK).json(toClientCar(result));
     } catch (err) {
         console.log('Error, commentCar:', err);
-        if (err instanceof Errors) res.status(err.code).json(err);
-        else res.status(Errors.standart.code).json(Errors.standart.message);
+        if (err instanceof Errors) res.status(err.code).json({ message: err.message });
+        else res.status(Errors.standart.code).json({ message: Errors.standart.message });
     }
 };
 
@@ -99,8 +99,8 @@ carController.verifyCarByVin = async (req: Request, res: Response) => {
         });
     } catch (err) {
         console.log('Error, verifyCarByVin:', err);
-        if (err instanceof Errors) res.status(err.code).json(err);
-        else res.status(Errors.standart.code).json(Errors.standart.message);
+        if (err instanceof Errors) res.status(err.code).json({ message: err.message });
+        else res.status(Errors.standart.code).json({ message: Errors.standart.message });
     }
 };
 
@@ -138,8 +138,8 @@ carController.getAllCars = async (req: Request, res: Response) => {
         });
     } catch (err) {
         console.log('Error, getAllCars:', err);
-        if (err instanceof Errors) res.status(err.code).json(err);
-        else res.status(Errors.standart.code).json(Errors.standart.message);
+        if (err instanceof Errors) res.status(err.code).json({ message: err.message });
+        else res.status(Errors.standart.code).json({ message: Errors.standart.message });
     }
 };
 
@@ -195,8 +195,10 @@ carController.updateChosenCar = async (req: Request, res: Response) => {
         res.status(HttpCode.OK).json({ data: result });
     } catch (err) {
         console.log('Error, updateChosenCar:', err);
-        if (err instanceof Errors) res.status(err.code).json(err);
-        else res.status(Errors.standart.code).json(Errors.standart.message);
+        // Always answer with a `{ message }` shape so the admin panel can show the
+        // actual reason instead of a generic "failed" alert.
+        if (err instanceof Errors) res.status(err.code).json({ message: err.message });
+        else res.status(Errors.standart.code).json({ message: Errors.standart.message });
     }
 };
 
@@ -208,8 +210,8 @@ carController.deleteChosenCar = async (req: Request, res: Response) => {
         res.status(HttpCode.OK).json({ data: result });
     } catch (err) {
         console.log('Error, deleteChosenCar:', err);
-        if (err instanceof Errors) res.status(err.code).json(err);
-        else res.status(Errors.standart.code).json(Errors.standart.message);
+        if (err instanceof Errors) res.status(err.code).json({ message: err.message });
+        else res.status(Errors.standart.code).json({ message: Errors.standart.message });
     }
 };
 

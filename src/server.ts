@@ -25,8 +25,23 @@ process.on('uncaughtException', (err) => {
 
 mongoose
     .connect(process.env.MONGO_URL as string, {})
-    .then(() => {
+    .then(async () => {
         console.log('MongoDB connection succeed');
+
+        // Mongoose builds indexes in the background and swallows the error, so a
+        // unique index that cannot be created (pre-existing duplicates) would leave
+        // the app running with no constraint at all. Report it loudly instead.
+        // `npm run check:vins` lists the offending documents.
+        try {
+            const CarModel = (await import('./schema/Car.model')).default;
+            await CarModel.ensureIndexes();
+        } catch (err) {
+            console.error(
+                'WARNING: car index build failed — duplicates likely exist. ' +
+                    'Run `npm run check:vins` to list them.',
+                err
+            );
+        }
         const PORT = process.env.PORT ?? 3000;
         const server = app.listen(PORT, function () {
             console.log(`The server is running successfully on http://localhost:${PORT} \n`);

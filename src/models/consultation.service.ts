@@ -92,7 +92,7 @@ class ConsultationService {
         const result = await this.consultationModel
             .findByIdAndDelete(consultationId)
             .exec();
-        if (!result) throw new Errors(HttpCode.NOT_MODIFIED, Message.UPDATED_FAILED);
+        if (!result) throw new Errors(HttpCode.NOT_FOUND, Message.UPDATED_FAILED);
         return result;
     }
 
@@ -104,7 +104,7 @@ class ConsultationService {
         const result = await this.consultationModel
             .findOneAndUpdate({ _id: consultationId }, input, { new: true })
             .exec();
-        if (!result) throw new Errors(HttpCode.NOT_MODIFIED, Message.UPDATED_FAILED);
+        if (!result) throw new Errors(HttpCode.NOT_FOUND, Message.UPDATED_FAILED);
         return result;
     }
 }

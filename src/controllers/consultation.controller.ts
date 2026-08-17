@@ -26,8 +26,8 @@ consultationController.createConsultation = async (req: Request, res: Response) 
         res.status(HttpCode.CREATED).json(result);
     } catch (err) {
         console.log('Error, createConsultation:', err);
-        if (err instanceof Errors) res.status(err.code).json(err);
-        else res.status(Errors.standart.code).json(Errors.standart.message);
+        if (err instanceof Errors) res.status(err.code).json({ message: err.message });
+        else res.status(Errors.standart.code).json({ message: Errors.standart.message });
     }
 };
 
@@ -38,8 +38,8 @@ consultationController.getMyConsultations = async (req: ExtendedRequest, res: Re
         res.status(HttpCode.OK).json(result);
     } catch (err) {
         console.log('Error, getMyConsultations:', err);
-        if (err instanceof Errors) res.status(err.code).json(err);
-        else res.status(Errors.standart.code).json(Errors.standart.message);
+        if (err instanceof Errors) res.status(err.code).json({ message: err.message });
+        else res.status(Errors.standart.code).json({ message: Errors.standart.message });
     }
 };
 

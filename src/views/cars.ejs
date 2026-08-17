@@ -5,7 +5,7 @@
   .badge--gold {
     background: rgba(251,191,36,0.1); color: #fbbf24;
     border: 1px solid rgba(251,191,36,0.2);
-    padding: 2px 8px; font-family: 'JetBrains Mono', ui-monospace, monospace;
+    padding: 2px 8px; font-family: var(--mono-font);
     font-weight: 700; font-size: 0.65rem; letter-spacing: 0.05em; border-radius: 4px;
   }
   .custom-select {
@@ -58,7 +58,7 @@
 
     .responsive-table td::before {
       content: attr(data-label);
-      font-family: 'JetBrains Mono', ui-monospace, monospace;
+      font-family: var(--mono-font);
       font-size: 10px;
       text-transform: uppercase;
       letter-spacing: 0.08em;
@@ -385,6 +385,12 @@
                   class="p-2 rounded hover:bg-white/10 text-on-surface-secondary hover:text-primary transition-colors" title="Edit">
                   Edit
                 </button>
+                <% if (car.carStatus === 'SOLD') { %>
+                <button onclick="openSaleModalFromRow(this)"
+                  class="p-2 rounded hover:bg-white/10 text-on-surface-secondary hover:text-success transition-colors" title="Edit sale record">
+                  Sale
+                </button>
+                <% } %>
                 <button onclick="deleteCar('<%= car._id %>')"
                   class="p-2 rounded hover:bg-white/10 text-on-surface-secondary hover:text-danger transition-colors" title="Delete">
                   🗑
@@ -433,12 +439,14 @@
               <th class="px-4 py-4 text-[11px] uppercase tracking-[0.08em] font-mono font-bold text-on-surface-faint">VIN</th>
               <th class="px-4 py-4 text-[11px] uppercase tracking-[0.08em] font-mono font-bold text-on-surface-faint">Buyer</th>
               <th class="px-4 py-4 text-[11px] uppercase tracking-[0.08em] font-mono font-bold text-on-surface-faint">Sale Date</th>
-              <th class="px-8 py-4 text-[11px] uppercase tracking-[0.08em] font-mono font-bold text-on-surface-faint text-right">Sale Price</th>
+              <th class="px-4 py-4 text-[11px] uppercase tracking-[0.08em] font-mono font-bold text-on-surface-faint text-right">Sale Price</th>
+              <th class="px-8 py-4 text-[11px] uppercase tracking-[0.08em] font-mono font-bold text-on-surface-faint text-right">Actions</th>
             </tr>
           </thead>
           <tbody class="divide-y divide-outline">
             <% soldCars.map(function(car, key) { %>
-            <tr class="hover:bg-white/[0.03] transition-colors">
+            <tr class="hover:bg-white/[0.03] transition-colors"
+              data-car="<%= encodeURIComponent(JSON.stringify(car)) %>">
               <td data-label="#" class="px-8 py-5 font-mono text-on-surface-faint text-xs"><%= String(key+1).padStart(2,'0') %></td>
               <td data-label="Vehicle" class="px-4 py-5">
                 <div class="font-bold text-sm text-on-surface"><%= car.carTitle %></div>
@@ -449,14 +457,20 @@
               <td data-label="Sale Date" class="px-4 py-5 font-mono text-xs text-on-surface-secondary">
                 <%= car.saleDate ? new Date(car.saleDate).toISOString().slice(0,10) : '—' %>
               </td>
-              <td data-label="Sale Price" class="px-8 py-5 text-right font-mono font-bold text-success text-base">
+              <td data-label="Sale Price" class="px-4 py-5 text-right font-mono font-bold text-success text-base">
                 <%= car.salePrice != null ? '₩' + car.salePrice.toLocaleString() : '—' %>
+              </td>
+              <td data-label="Actions" class="px-8 py-5 text-right">
+                <button onclick="openSaleModalFromRow(this)"
+                  class="px-3 py-1.5 rounded border border-outline text-[10px] uppercase font-mono font-bold text-on-surface-secondary hover:border-success hover:text-success transition-colors">
+                  Edit Sale
+                </button>
               </td>
             </tr>
             <% }) %>
             <% if(soldCars.length === 0) { %>
             <tr>
-              <td colspan="6" class="px-8 py-16 text-center text-on-surface-faint font-mono text-xs uppercase tracking-widest">
+              <td colspan="7" class="px-8 py-16 text-center text-on-surface-faint font-mono text-xs uppercase tracking-widest">
                 No sold cars yet. Mark a listing as Sold to record a sale.
               </td>
             </tr>
@@ -582,6 +596,28 @@
               <option value="<%= t %>"><%= t.charAt(0) + t.slice(1).toLowerCase() %></option>
             <% }) %>
           </select>
+        </div>
+
+        <!-- Sale record — only relevant while the car is marked Sold -->
+        <div id="edit-sale-fields" class="sm:col-span-2 hidden">
+          <div class="rounded-lg border border-success/30 bg-success/[0.04] p-4 grid grid-cols-1 sm:grid-cols-3 gap-4">
+            <div class="sm:col-span-3">
+              <p class="text-[10px] uppercase tracking-widest font-mono font-bold text-success">Sale Record</p>
+              <p class="text-[9px] text-on-surface-faint font-mono italic mt-0.5">Buyers verify these values publicly by VIN.</p>
+            </div>
+            <div>
+              <label class="block text-[10px] uppercase tracking-widest font-mono font-bold text-primary mb-2">Buyer Name</label>
+              <input name="buyerName" type="text" class="w-full bg-black/40 border border-outline rounded-lg focus:border-primary text-on-surface px-4 py-3 text-sm outline-none" />
+            </div>
+            <div>
+              <label class="block text-[10px] uppercase tracking-widest font-mono font-bold text-primary mb-2">Sale Price (KRW)</label>
+              <input name="salePrice" type="number" min="0" class="w-full bg-black/40 border border-outline rounded-lg focus:border-primary text-primary font-bold px-4 py-3 text-sm font-mono outline-none" placeholder="18000000" />
+            </div>
+            <div>
+              <label class="block text-[10px] uppercase tracking-widest font-mono font-bold text-primary mb-2">Sale Date</label>
+              <input name="saleDate" type="date" class="w-full bg-black/40 border border-outline rounded-lg focus:border-primary text-on-surface px-4 py-3 text-sm font-mono outline-none" />
+            </div>
+          </div>
         </div>
 
         <div class="sm:col-span-2">

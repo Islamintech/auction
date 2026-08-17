@@ -23,8 +23,8 @@ pointsController.getPointsHistory = async (req: ExtendedRequest, res: Response) 
         res.status(HttpCode.OK).json(result);
     } catch (err) {
         console.log('Error, getPointsHistory:', err);
-        if (err instanceof Errors) res.status(err.code).json(err);
-        else res.status(Errors.standart.code).json(Errors.standart.message);
+        if (err instanceof Errors) res.status(err.code).json({ message: err.message });
+        else res.status(Errors.standart.code).json({ message: Errors.standart.message });
     }
 };
 
@@ -35,8 +35,8 @@ pointsController.getLeaderboard = async (req: Request, res: Response) => {
         res.status(HttpCode.OK).json(result);
     } catch (err) {
         console.log('Error, getLeaderboard:', err);
-        if (err instanceof Errors) res.status(err.code).json(err);
-        else res.status(Errors.standart.code).json(Errors.standart.message);
+        if (err instanceof Errors) res.status(err.code).json({ message: err.message });
+        else res.status(Errors.standart.code).json({ message: Errors.standart.message });
     }
 };
 

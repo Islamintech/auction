@@ -139,7 +139,7 @@ class PostService {
                 { new: true }
             )
             .exec();
-        if (!result) throw new Errors(HttpCode.NOT_MODIFIED, Message.UPDATED_FAILED);
+        if (!result) throw new Errors(HttpCode.NOT_FOUND, Message.UPDATED_FAILED);
 
         if (modifier === 1) {
             await this.memberService.addUserPoints({ _id: memberId } as any, 4);
@@ -187,7 +187,7 @@ class PostService {
         const result = await this.postModel
             .findByIdAndDelete(postId)
             .exec();
-        if (!result) throw new Errors(HttpCode.NOT_MODIFIED, Message.UPDATED_FAILED);
+        if (!result) throw new Errors(HttpCode.NOT_FOUND, Message.UPDATED_FAILED);
         return result;
     }
 
@@ -196,7 +196,7 @@ class PostService {
         const result = await this.postModel
             .findOneAndUpdate({ _id: postId }, input, { new: true })
             .exec();
-        if (!result) throw new Errors(HttpCode.NOT_MODIFIED, Message.UPDATED_FAILED);
+        if (!result) throw new Errors(HttpCode.NOT_FOUND, Message.UPDATED_FAILED);
         return result;
     }
 }

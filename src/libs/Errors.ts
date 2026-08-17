@@ -15,6 +15,8 @@ export enum Message {
     NO_DATA_FOUND = "No data is found!",
     CREATED_FAILED = "Create is failed!",
     UPDATED_FAILED = "Update is failed!",
+    DUPLICATE_CAR = "Another car already uses this brand, year and title!",
+    DUPLICATE_VIN = "Another car is already registered with this VIN!",
     TOKEN_CREATION_FAILED = "Token creation error",
     NO_MEMBER_NICK = "No member with that nickname!",
     USED_NICK_PHONE = "This nickname or phone is already in use!",
