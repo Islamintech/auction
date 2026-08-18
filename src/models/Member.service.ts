@@ -4,6 +4,53 @@ import Errors, { HttpCode, Message } from '../libs/Errors';
 import { MemberStatus, MemberType } from '../libs/enums/member.enum';
 import * as bcrypt from 'bcryptjs';
 import { shapeIntoMongooseObjectId } from '../libs/config';
+import { T } from '../libs/types/common';
+
+/**
+ * Fields a client is allowed to set on its own account.
+ *
+ * memberType, memberStatus and memberPoints are deliberately absent: they are
+ * privilege and reward state owned by the server. TypeScript interfaces do not
+ * filter anything at runtime — req.body is whatever the caller sent — so the
+ * allowlist has to be explicit, or a signup carrying "memberType": "ADMIN"
+ * creates an admin.
+ */
+const SIGNUP_FIELDS = [
+    'memberNick',
+    'memberPhone',
+    'memberPassword',
+    'memberEmail',
+    'memberImage',
+    'memberDesc',
+    'memberAddress',
+    'memberCountry',
+    'memberTelegram',
+] as const;
+
+/**
+ * Same idea for profile edits. memberPassword is excluded as well: this route
+ * never hashed it, so accepting one would store plaintext and permanently break
+ * that account's login. Changing a password needs its own endpoint.
+ */
+const PROFILE_FIELDS = [
+    'memberNick',
+    'memberPhone',
+    'memberEmail',
+    'memberImage',
+    'memberDesc',
+    'memberAddress',
+    'memberCountry',
+    'memberTelegram',
+] as const;
+
+const pickAllowed = (source: any, allowed: readonly string[]): T => {
+    const out: T = {};
+    for (const key of allowed) {
+        const value = source?.[key];
+        if (value !== undefined && value !== null && value !== '') out[key] = value;
+    }
+    return out;
+};
 
 class MemberService {
     private readonly memberModel;
@@ -15,13 +62,26 @@ class MemberService {
     /** SPA */
 
     public async signup(input: MemberInput): Promise<Member> {
+        const data = pickAllowed(input, SIGNUP_FIELDS);
+        if (!data.memberPassword)
+            throw new Errors(HttpCode.BAD_REQUEST, Message.CREATED_FAILED);
+
         const salt = await bcrypt.genSalt();
-        input.memberPassword = await bcrypt.hash(input.memberPassword, salt);
+        data.memberPassword = await bcrypt.hash(String(data.memberPassword), salt);
+
+        // Set the privileged fields explicitly rather than leaning on schema
+        // defaults, so they are pinned regardless of what the caller sent.
+        data.memberType = MemberType.USER;
+        data.memberStatus = MemberStatus.ACTIVE;
+        data.memberPoints = 0;
 
         try {
-            const result = await this.memberModel.create(input);
-            result.memberPassword = '';
-            return result.toJSON();
+            const result = await this.memberModel.create(data);
+            const member = result.toJSON();
+            // Drop the hash rather than blanking it — assigning '' left the key
+            // in the response body.
+            delete (member as T).memberPassword;
+            return member;
         } catch (err) {
             console.error('Error, signup:', err);
             throw new Errors(HttpCode.BAD_REQUEST, Message.USED_NICK_PHONE);
@@ -58,16 +118,14 @@ class MemberService {
     public async updateMember(member: Member, input: MemberUpdateInput): Promise<Member> {
         const memberId = shapeIntoMongooseObjectId(member._id);
 
-        const cleaned: any = {};
-        for (const key of Object.keys(input) as (keyof MemberUpdateInput)[]) {
-            const v = (input as any)[key];
-            if (v !== undefined && v !== null && v !== "") {
-                cleaned[key] = v;
-            }
-        }
+        // Only profile fields, and only ever on the caller's own account: the id
+        // comes from the verified token, never from the request body. Iterating
+        // Object.keys(input) previously copied whatever was posted, which let a
+        // signed-in user grant themselves memberType ADMIN.
+        const cleaned = pickAllowed(input, PROFILE_FIELDS);
 
         const result = await this.memberModel
-            .findByIdAndUpdate({ _id: memberId }, cleaned, { new: true })
+            .findByIdAndUpdate(memberId, cleaned, { new: true, runValidators: true })
             .exec();
         if (!result) throw new Errors(HttpCode.NOT_FOUND, Message.UPDATED_FAILED);
         return result;
@@ -118,11 +176,21 @@ class MemberService {
     if (existingAdmin) 
         throw new Errors(HttpCode.BAD_REQUEST, Message.CREATED_FAILED);
 
+    const data = pickAllowed(input, SIGNUP_FIELDS);
+    if (!data.memberPassword)
+        throw new Errors(HttpCode.BAD_REQUEST, Message.CREATED_FAILED);
+
     const salt = await bcrypt.genSalt();
-    input.memberPassword = await bcrypt.hash(input.memberPassword, salt);
+    data.memberPassword = await bcrypt.hash(String(data.memberPassword), salt);
+
+    // ADMIN is granted here by the server, never taken from the request body.
+    // This route is only reachable while no admin exists (guarded above).
+    data.memberType = MemberType.ADMIN;
+    data.memberStatus = MemberStatus.ACTIVE;
+    data.memberPoints = 0;
 
     try {
-        const result = await this.memberModel.create(input);
+        const result = await this.memberModel.create(data);
         return result;
     } catch (err) {
         throw new Errors(HttpCode.BAD_REQUEST, Message.ADMIN_EXIST);
