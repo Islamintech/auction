@@ -4,6 +4,7 @@ import Errors, { HttpCode, Message } from '../libs/Errors';
 import { MemberStatus, MemberType } from '../libs/enums/member.enum';
 import * as bcrypt from 'bcryptjs';
 import { shapeIntoMongooseObjectId } from '../libs/config';
+import mongoose from 'mongoose';
 import { T } from '../libs/types/common';
 
 /**
@@ -43,6 +44,11 @@ const PROFILE_FIELDS = [
     'memberTelegram',
 ] as const;
 
+/** Cost-matched stand-in so a missing account is not detectably faster. */
+const DUMMY_HASH = bcrypt.hashSync('cost-matching-placeholder', 10);
+
+const MIN_PASSWORD_LENGTH = 8;
+
 const pickAllowed = (source: any, allowed: readonly string[]): T => {
     const out: T = {};
     for (const key of allowed) {
@@ -63,8 +69,13 @@ class MemberService {
 
     public async signup(input: MemberInput): Promise<Member> {
         const data = pickAllowed(input, SIGNUP_FIELDS);
-        if (!data.memberPassword)
-            throw new Errors(HttpCode.BAD_REQUEST, Message.CREATED_FAILED);
+
+        // Validated here rather than trusting the browser: the API is public and
+        // the client's checks are only a convenience.
+        if (!data.memberNick || !data.memberPhone || !data.memberPassword)
+            throw new Errors(HttpCode.BAD_REQUEST, Message.MISSING_SIGNUP_FIELDS);
+        if (String(data.memberPassword).length < MIN_PASSWORD_LENGTH)
+            throw new Errors(HttpCode.BAD_REQUEST, Message.WEAK_PASSWORD);
 
         const salt = await bcrypt.genSalt();
         data.memberPassword = await bcrypt.hash(String(data.memberPassword), salt);
@@ -82,9 +93,18 @@ class MemberService {
             // in the response body.
             delete (member as T).memberPassword;
             return member;
-        } catch (err) {
+        } catch (err: any) {
             console.error('Error, signup:', err);
-            throw new Errors(HttpCode.BAD_REQUEST, Message.USED_NICK_PHONE);
+            // Previously every failure reported USED_NICK_PHONE, so a validation
+            // error looked like a duplicate account.
+            if (err?.code === 11000) {
+                const field = Object.keys(err.keyPattern ?? {})[0];
+                throw new Errors(
+                    HttpCode.BAD_REQUEST,
+                    field === 'memberEmail' ? Message.USED_EMAIL : Message.USED_NICK_PHONE
+                );
+            }
+            throw new Errors(HttpCode.BAD_REQUEST, Message.CREATED_FAILED);
         }
     }
 
@@ -96,14 +116,41 @@ class MemberService {
             )
             .exec();
 
-        if (!member) throw new Errors(HttpCode.NOT_FOUND, Message.NO_MEMBER_NICK);
+        // Unknown nickname and wrong password return the same 401. Distinct
+        // replies (404 "No member with that nickname" vs 401 "Wrong password")
+        // let anyone enumerate which accounts exist. Hash a throwaway value when
+        // there is no member so both paths cost roughly the same time.
+        if (!member) {
+            await bcrypt.compare(String(input.memberPassword ?? ''), DUMMY_HASH);
+            throw new Errors(HttpCode.UNAUTHIRIZED, Message.INVALID_CREDENTIALS);
+        }
         if (member.memberStatus === MemberStatus.BANNED)
             throw new Errors(HttpCode.FORBIDDEN, Message.BLOCKED_USER);
 
-        const isMatch = await bcrypt.compare(input.memberPassword, member.memberPassword);
-        if (!isMatch) throw new Errors(HttpCode.UNAUTHIRIZED, Message.WORNG_PASSWORD);
+        const isMatch = await bcrypt.compare(
+            String(input.memberPassword ?? ''),
+            member.memberPassword
+        );
+        if (!isMatch)
+            throw new Errors(HttpCode.UNAUTHIRIZED, Message.INVALID_CREDENTIALS);
 
         return await this.memberModel.findById(member._id).lean().exec();
+    }
+
+    /**
+     * Resolves the member behind a token on every authenticated request.
+     *
+     * The token carries only an id, so identity is re-read here rather than
+     * trusted from the payload. That also makes bans effective immediately:
+     * previously req.member came straight from the JWT, so a banned or deleted
+     * account kept full access until the token expired, up to AUTH_TIMER hours.
+     */
+    public async getAuthenticatedMember(id: string): Promise<Member | null> {
+        if (!mongoose.isValidObjectId(id)) return null;
+        return await this.memberModel
+            .findOne({ _id: shapeIntoMongooseObjectId(id), memberStatus: MemberStatus.ACTIVE })
+            .lean<Member>()
+            .exec();
     }
 
     public async getMemberDetail(member: Member): Promise<Member> {
@@ -205,10 +252,19 @@ class MemberService {
             )
             .exec();
             
-        if (!member) throw new Errors(HttpCode.NOT_FOUND, Message.NO_MEMBER_NICK);
+        // Same single message as the SPA login, so the admin panel cannot be
+        // used to probe which nicknames exist.
+        if (!member) {
+            await bcrypt.compare(String(input.memberPassword ?? ''), DUMMY_HASH);
+            throw new Errors(HttpCode.UNAUTHIRIZED, Message.INVALID_CREDENTIALS);
+        }
 
-        const isMatch = await bcrypt.compare(input.memberPassword, member.memberPassword);
-        if (!isMatch) throw new Errors(HttpCode.UNAUTHIRIZED, Message.WORNG_PASSWORD);
+        const isMatch = await bcrypt.compare(
+            String(input.memberPassword ?? ''),
+            member.memberPassword
+        );
+        if (!isMatch)
+            throw new Errors(HttpCode.UNAUTHIRIZED, Message.INVALID_CREDENTIALS);
 
         return await this.memberModel.findById(member._id).exec();
     }

@@ -19,7 +19,13 @@ export enum Message {
     DUPLICATE_VIN = "Another car is already registered with this VIN!",
     TOKEN_CREATION_FAILED = "Token creation error",
     NO_MEMBER_NICK = "No member with that nickname!",
+    // One message for "no such user" and "wrong password" alike — separate
+    // messages let an attacker enumerate valid nicknames.
+    INVALID_CREDENTIALS = "Incorrect nickname or password!",
+    WEAK_PASSWORD = "Password must be at least 8 characters!",
+    MISSING_SIGNUP_FIELDS = "Nickname, phone and password are all required!",
     USED_NICK_PHONE = "This nickname or phone is already in use!",
+    USED_EMAIL = "This email is already in use!",
     WORNG_PASSWORD = "Wrong password!",
     NOT_AUTHENTICATED = "You are not authenticated, please login first",
     BLOCKED_USER = "Your account has been banned, please contact AutoAuction support",
