@@ -265,7 +265,6 @@ function openEditCarModal(button) {
         'carMileage',
         'carPrice',
         'carColor',
-        'carMake',
         'carModel',
         'carFuel',
         'carTransmission',
@@ -322,7 +321,7 @@ document.addEventListener('DOMContentLoaded', () => {
         event.preventDefault();
         const carId = editForm.elements._id.value;
         const payload = {};
-        const optionalFields = ['carVin', 'carColor', 'carMake', 'carModel', 'carDesc'];
+        const optionalFields = ['carVin', 'carColor', 'carModel', 'carDesc'];
 
         [
             'carStatus',

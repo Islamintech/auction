@@ -143,13 +143,9 @@
 
               <div>
                 <label class="block text-[10px] uppercase tracking-widest font-mono font-bold text-primary mb-2">Manufacturer Brand *</label>
-                <select name="carBrand" required
-                  class="custom-select w-full bg-black/40 border border-outline rounded-lg focus:border-primary text-on-surface px-4 py-3 text-sm outline-none">
-                  <option value="">Select Brand</option>
-                  <% CarBrand.map(function(brand) { %>
-                    <option value="<%= brand %>"><%= brand.charAt(0) + brand.slice(1).toLowerCase() %></option>
-                  <% }) %>
-                </select>
+                <input name="carBrand" type="text" required list="brand-options" autocomplete="off"
+                  class="w-full bg-black/40 border border-outline rounded-lg focus:border-primary text-on-surface px-4 py-3 text-sm outline-none"
+                  placeholder="e.g., Hyundai" />
               </div>
 
               <div>
@@ -197,20 +193,9 @@
 
               <div>
                 <label class="block text-[10px] uppercase tracking-widest font-mono font-bold text-primary mb-2">Color</label>
-                <select name="carColor"
-                  class="custom-select w-full bg-black/40 border border-outline rounded-lg focus:border-primary text-on-surface px-4 py-3 text-sm outline-none">
-                  <option value="">Select Color</option>
-                  <% CarColor.map(function(color) { %>
-                    <option value="<%= color %>"><%= color.charAt(0) + color.slice(1).toLowerCase() %></option>
-                  <% }) %>
-                </select>
-              </div>
-
-              <div>
-                <label class="block text-[10px] uppercase tracking-widest font-mono font-bold text-primary mb-2">Make</label>
-                <input name="carMake" type="text"
+                <input name="carColor" type="text" list="color-options" autocomplete="off"
                   class="w-full bg-black/40 border border-outline rounded-lg focus:border-primary text-on-surface px-4 py-3 text-sm outline-none"
-                  placeholder="e.g., Hyundai" />
+                  placeholder="e.g., White" />
               </div>
 
               <div>
@@ -510,11 +495,7 @@
 
         <div>
           <label class="block text-[10px] uppercase tracking-widest font-mono font-bold text-primary mb-2">Manufacturer Brand *</label>
-          <select name="carBrand" required class="custom-select w-full bg-black/40 border border-outline rounded-lg focus:border-primary text-on-surface px-4 py-3 text-sm outline-none">
-            <% CarBrand.map(function(brand) { %>
-              <option value="<%= brand %>"><%= brand.charAt(0) + brand.slice(1).toLowerCase() %></option>
-            <% }) %>
-          </select>
+          <input name="carBrand" type="text" required list="brand-options" autocomplete="off" class="w-full bg-black/40 border border-outline rounded-lg focus:border-primary text-on-surface px-4 py-3 text-sm outline-none" placeholder="e.g., Hyundai" />
         </div>
 
         <div>
@@ -562,17 +543,7 @@
 
         <div>
           <label class="block text-[10px] uppercase tracking-widest font-mono font-bold text-primary mb-2">Color</label>
-          <select name="carColor" class="custom-select w-full bg-black/40 border border-outline rounded-lg focus:border-primary text-on-surface px-4 py-3 text-sm outline-none">
-            <option value="">Select Color</option>
-            <% CarColor.map(function(color) { %>
-              <option value="<%= color %>"><%= color.charAt(0) + color.slice(1).toLowerCase() %></option>
-            <% }) %>
-          </select>
-        </div>
-
-        <div>
-          <label class="block text-[10px] uppercase tracking-widest font-mono font-bold text-primary mb-2">Make</label>
-          <input name="carMake" type="text" class="w-full bg-black/40 border border-outline rounded-lg focus:border-primary text-on-surface px-4 py-3 text-sm outline-none" />
+          <input name="carColor" type="text" list="color-options" autocomplete="off" class="w-full bg-black/40 border border-outline rounded-lg focus:border-primary text-on-surface px-4 py-3 text-sm outline-none" placeholder="e.g., White" />
         </div>
 
         <div>
@@ -696,3 +667,9 @@
 <script src="/js/cars.js"></script>
 </body>
 <%- include('includes/footer') %>
+  <datalist id="brand-options">
+    <% CarBrand.map(function(brand) { %><option value="<%= brand %>"></option><% }) %>
+  </datalist>
+  <datalist id="color-options">
+    <% CarColor.map(function(color) { %><option value="<%= color %>"></option><% }) %>
+  </datalist>

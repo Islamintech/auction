@@ -1,5 +1,5 @@
 import { ObjectId } from "mongoose";
-import { CarBrand, CarColor, CarCondition, CarFuel, CarStatus, CarTransmission, CarType } from "../enums/car.enum";
+import { CarCondition, CarFuel, CarStatus, CarTransmission, CarType } from "../enums/car.enum";
 
 export interface Car {
     _id: ObjectId;
@@ -9,8 +9,7 @@ export interface Car {
     buyerName?: string;
     salePrice?: number;
     saleDate?: Date;
-    carBrand: CarBrand;
-    carMake?: string;
+    carBrand: string;
     carModel?: string;
     carType: CarType;
     carCondition: CarCondition;
@@ -19,7 +18,7 @@ export interface Car {
     carYear: string;
     carMileage: number;
     carPrice: string;
-    carColor?: CarColor;
+    carColor?: string;
     carDesc?: string;
     carImages: string[];
     carViewCount: number;
@@ -34,8 +33,7 @@ export interface CarInput {
     carStatus?: CarStatus;
     carTitle: string;
     carVin?: string;
-    carBrand: CarBrand;
-    carMake?: string;
+    carBrand: string;
     carModel?: string;
     carType: CarType;
     carCondition: CarCondition;
@@ -44,7 +42,7 @@ export interface CarInput {
     carYear: string;
     carMileage: number;
     carPrice: string;
-    carColor?: CarColor;
+    carColor?: string;
     carDesc?: string;
     carImages: string[];
 }
@@ -57,8 +55,7 @@ export interface CarUpdateInput {
     buyerName?: string;
     salePrice?: number;
     saleDate?: Date | string;
-    carBrand?: CarBrand;
-    carMake?: string;
+    carBrand?: string;
     carModel?: string;
     carType?: CarType;
     carCondition?: CarCondition;
@@ -67,7 +64,7 @@ export interface CarUpdateInput {
     carYear?: string;
     carMileage?: number;
     carPrice?: string;
-    carColor?: CarColor;
+    carColor?: string;
     carDesc?: string;
     carImages?: string[];
 }
@@ -76,7 +73,7 @@ export interface CarInquiry {
     order: string;
     page: number;
     limit: number;
-    carBrand?: CarBrand;
+    carBrand?: string;
     carType?: CarType;
     carCondition?: CarCondition;
     carStatus?: CarStatus;

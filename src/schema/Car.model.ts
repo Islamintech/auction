@@ -1,5 +1,5 @@
 import mongoose, { Schema } from "mongoose";
-import { CarStatus, CarBrand, CarColor, CarType, CarCondition, CarFuel, CarTransmission } from "../libs/enums/car.enum";
+import { CarStatus, CarType, CarCondition, CarFuel, CarTransmission } from "../libs/enums/car.enum";
 
 const carSchema = new Schema(
     {
@@ -36,12 +36,8 @@ const carSchema = new Schema(
 
         carBrand: {
             type: String,
-            enum: Object.values(CarBrand),
             required: true,
-        },
-
-        carMake: {
-            type: String,
+            trim: true,
         },
 
         carModel: {
@@ -93,7 +89,7 @@ const carSchema = new Schema(
 
         carColor: {
             type: String,
-            enum: Object.values(CarColor),
+            trim: true,
         },
 
         carDesc: {
