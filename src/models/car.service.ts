@@ -156,14 +156,10 @@ class CarService {
     public async commentCar(memberId: ObjectId, id: string, input: any): Promise<Car> {
         const carId = shapeIntoMongooseObjectId(id);
 
-        const CommentModel = (await import('../schema/Comment.model')).default;
-        await CommentModel.create({
-            memberId,
-            commentRefId: carId,
-            commentGroup: 'CAR',
-            commentContent: input.commentContent,
-        });
-
+        // Claim the comment slot first. Creating the comment before this ran left
+        // an orphan row behind whenever the car turned out to be missing, sold or
+        // deleted: the request 404'd but the row was already committed, and
+        // carCommentCount never moved, so the count and the rows disagreed.
         const result = await this.carModel
             .findOneAndUpdate(
                 { _id: carId, carStatus: CarStatus.ONSALE },
@@ -172,6 +168,22 @@ class CarService {
             )
             .exec();
         if (!result) throw new Errors(HttpCode.NOT_FOUND, Message.NO_DATA_FOUND);
+
+        const CommentModel = (await import('../schema/Comment.model')).default;
+        try {
+            await CommentModel.create({
+                memberId,
+                commentRefId: carId,
+                commentGroup: 'CAR',
+                commentContent: input.commentContent,
+            });
+        } catch (err) {
+            // Put the counter back so a failed insert cannot inflate it.
+            await this.carModel
+                .findByIdAndUpdate(carId, { $inc: { carCommentCount: -1 } })
+                .exec();
+            throw err;
+        }
 
         await this.pointService.awardPoints(
             { _id: memberId } as any,
@@ -254,6 +266,28 @@ class CarService {
                 delete set.carVin;
                 update.$unset = { ...(update.$unset ?? {}), carVin: '' };
             }
+        }
+
+        // A sold car has to carry its sale record. The admin panel enforces this
+        // in the browser, which left the API able to produce a SOLD car with no
+        // buyer, price, date or VIN — unverifiable through /car/verify/:vin and
+        // blank in the sold table. Merge with the stored document first so a
+        // partial edit of an already-sold car does not have to resend everything.
+        if (set.carStatus === CarStatus.SOLD) {
+            const existing = await this.carModel.findById(carId).lean().exec();
+            if (!existing) throw new Errors(HttpCode.NOT_FOUND, Message.NO_DATA_FOUND);
+
+            const merged = { ...existing, ...set } as T;
+            const missing =
+                !String(merged.carVin ?? '').trim() ||
+                !String(merged.buyerName ?? '').trim() ||
+                merged.salePrice === undefined ||
+                merged.salePrice === null ||
+                merged.salePrice === '' ||
+                !merged.saleDate;
+
+            if (missing)
+                throw new Errors(HttpCode.BAD_REQUEST, Message.INCOMPLETE_SALE);
         }
 
         if (set.carStatus && set.carStatus !== CarStatus.SOLD) {
